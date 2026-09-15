@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#f3f1eb" />
+  <meta name="description" content="STACK × Moonvit — персональная система наблюдения за привычками и состоянием." />
+  <title>STACK × Moonvit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <main id="app" aria-live="polite"></main>
+    <nav class="bottom-nav" aria-label="Основная навигация">
+      <button class="nav-item active" data-view="today"><span>⌂</span><small>Сегодня</small></button>
+      <button class="nav-item" data-view="stacks"><span>◎</span><small>Стеки</small></button>
+      <button class="nav-item" data-view="insights"><span>⌁</span><small>Инсайты</small></button>
+      <button class="nav-item" data-view="profile"><span>○</span><small>Профиль</small></button>
+    </nav>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
