@@ -1,27 +1,19 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#f3f1eb" />
-  <meta name="description" content="STACK × Moonvit — персональная система наблюдения за привычками и состоянием." />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f3f1eb">
+  <meta name="description" content="STACK × Moonvit — система личной дисциплины и осознанного улучшения.">
   <title>STACK × Moonvit</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />\n  <link rel="stylesheet" href="extras.css" />\n  <link rel="stylesheet" href="history.css" />\n  <link rel="stylesheet" href="builder.css" />\n  <link rel="stylesheet" href="manage.css" />
+  <link rel="stylesheet" href="styles/app.css">
 </head>
 <body>
-  <!-- Полная версия STACK × Moonvit -->
   <div class="app-shell">
-    <main id="app" aria-live="polite">
-      <header class="topbar"><div class="brand">STACK <span class="moon-mark">× MOONVIT</span></div><div class="avatar">А</div></header>
-      <p class="eyebrow">Сегодня</p><h1>Доброе утро, Алексей</h1><p class="subtitle">Твой день — спокойно и по существу.</p>
-      <section class="card progress-card"><div class="progress-top"><div><h3>Эксперимент со сном</h3><p>Наблюдаем без поспешных выводов</p></div><span class="day">День 12 из 30</span></div><div class="progress"><i></i></div><div class="moon-row"><i class="planet"></i><span>Moon · Sleep & Relaxation</span></div></section>
-      <div class="section-head"><h2>Сегодня</h2></div>
-      <div class="tasks"><div class="task"><span class="check"></span><div class="task-copy"><div class="task-title">Принять Moonvit Moon</div><div class="task-meta">Вечер · SLEEP STACK</div></div><span class="tag">Moonvit</span></div><div class="task"><span class="check"></span><div class="task-copy"><div class="task-title">Отметить качество сна</div><div class="task-meta">1 короткий вопрос</div></div></div><div class="task"><span class="check"></span><div class="task-copy"><div class="task-title">Фокус-сессия</div><div class="task-meta">45 минут · FOCUS STACK</div></div></div></div>
-      <div class="section-head"><h2>STACK заметил</h2></div><section class="card insight"><p>В дни, когда ты ложишься до 00:00, утренняя энергия обычно выше.</p><span class="confidence">Наблюдение по 9 дням · это не медицинский вывод</span></section>
-    </main>
+    <main id="app"></main>
     <nav class="bottom-nav" aria-label="Основная навигация">
       <button class="nav-item active" data-view="today"><span>⌂</span><small>Сегодня</small></button>
       <button class="nav-item" data-view="stacks"><span>◎</span><small>Стеки</small></button>
@@ -30,6 +22,6 @@
     </nav>
   </div>
   <div id="toast" class="toast" role="status"></div>
-  <script src="app-v6.js"></script>
+  <script type="module" src="src/app.js"></script>
 </body>
 </html>
