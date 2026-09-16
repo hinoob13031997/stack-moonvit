@@ -1,5 +1,5 @@
-import {store} from './store.js?v=20';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,customActionModal,processModal} from './ui.js?v=20';
+import {store} from './store.js?v=21';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=21';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -31,14 +31,17 @@ document.addEventListener('click',event=>{
   const remove=target.closest('[data-remove]');if(remove){event.stopPropagation();modal(`<p class="eyebrow">Удаление</p><h2>Удалить ${remove.dataset.remove} STACK?</h2><p class="subtitle">Сохранённые отметки останутся в истории.</p><button class="danger" data-confirm-remove="${remove.dataset.remove}">Удалить стек</button>`);return}
   const confirmRemove=target.closest('[data-confirm-remove]');if(confirmRemove){store.remove(confirmRemove.dataset.confirmRemove);confirmRemove.closest('.modal-wrap').remove();render('stacks');toast('Стек удалён');return}
   const manage=target.closest('[data-manage]');if(manage){event.stopPropagation();manageStackModal(manage.dataset.manage);return}
+  const actionMenu=target.closest('[data-action-menu]');if(actionMenu){actionMenu.closest('.modal-wrap').remove();actionMenuModal(actionMenu.dataset.actionMenu);return}
+  const openTemplates=target.closest('[data-open-templates]');if(openTemplates){openTemplates.closest('.modal-wrap').remove();templatesModal(openTemplates.dataset.openTemplates);return}
+  const backManage=target.closest('[data-back-manage]');if(backManage){backManage.closest('.modal-wrap').remove();manageStackModal(backManage.dataset.backManage);return}
   const addCustom=target.closest('[data-add-custom]');if(addCustom){addCustom.closest('.modal-wrap').remove();customActionModal(addCustom.dataset.addCustom);return}
   const editCustom=target.closest('[data-edit-custom]');if(editCustom){const action=store.state.customActions.find(item=>item.id===editCustom.dataset.editCustom);editCustom.closest('.modal-wrap').remove();if(action)customActionModal(action.stackCode,action.id);return}
   const moveCustom=target.closest('[data-move-custom]');if(moveCustom){const action=store.state.customActions.find(item=>item.id===moveCustom.dataset.moveCustom);store.moveCustomAction(moveCustom.dataset.moveCustom,Number(moveCustom.dataset.direction));moveCustom.closest('.modal-wrap').remove();if(action)manageStackModal(action.stackCode);return}
   const saveCustom=target.closest('[data-save-custom]');if(saveCustom){const input={stackCode:document.querySelector('#customStack').value,title:document.querySelector('#customTitle').value,kind:document.querySelector('#customKind').value,schedule:document.querySelector('#customSchedule').value,period:document.querySelector('#customPeriod').value,days:[...document.querySelectorAll('[data-days] input:checked')].map(item=>item.value),steps:document.querySelector('#customSteps').value.split('\n')};const saved=saveCustom.dataset.customId?store.updateCustomAction(saveCustom.dataset.customId,input):store.addCustomAction(input);if(!saved){toast('Заполни название, дни и шаги процесса');return}saveCustom.closest('.modal-wrap').remove();manageStackModal(input.stackCode);toast(saveCustom.dataset.customId?'Изменения сохранены':'Действие добавлено');return}
   const toggleCustom=target.closest('[data-toggle-custom]');if(toggleCustom){const action=store.state.customActions.find(item=>item.id===toggleCustom.dataset.toggleCustom);store.toggleCustomAction(toggleCustom.dataset.toggleCustom);toggleCustom.closest('.modal-wrap').remove();if(action)manageStackModal(action.stackCode);toast(action?.pausedAt?'Действие на паузе':'Действие возобновлено');return}
-  const deleteCustom=target.closest('[data-delete-custom]');if(deleteCustom){modal(`<p class="eyebrow">Удаление</p><h2>Удалить действие?</h2><p class="subtitle">Прошлые отметки останутся в истории.</p><button class="danger" data-confirm-delete-custom="${deleteCustom.dataset.deleteCustom}">Удалить действие</button>`);return}
+  const deleteCustom=target.closest('[data-delete-custom]');if(deleteCustom){deleteCustom.closest('.modal-wrap').remove();modal(`<p class="eyebrow">Удаление</p><h2>Удалить действие?</h2><p class="subtitle">Прошлые отметки останутся в истории.</p><button class="danger" data-confirm-delete-custom="${deleteCustom.dataset.deleteCustom}">Удалить действие</button>`);return}
   const confirmDelete=target.closest('[data-confirm-delete-custom]');if(confirmDelete){const action=store.state.customActions.find(item=>item.id===confirmDelete.dataset.confirmDelete);store.deleteCustomAction(confirmDelete.dataset.confirmDelete);document.querySelectorAll('.modal-wrap').forEach(item=>item.remove());if(action)manageStackModal(action.stackCode);toast('Действие удалено');return}
-  const template=target.closest('[data-template]');if(template){const added=store.toggleTemplate(template.dataset.template);template.closest('.modal-wrap').remove();manageStackModal(template.dataset.templateStack);toast(added?'Пример добавлен':'Пример убран');return}
+  const template=target.closest('[data-template]');if(template){const added=store.toggleTemplate(template.dataset.template);template.closest('.modal-wrap').remove();templatesModal(template.dataset.templateStack);toast(added?'Пример добавлен':'Пример убран');return}
   const activate=target.closest('[data-activate]');if(activate){store.activate(activate.dataset.activate);render('today');toast('Активный стек изменён');return}
   if(target.closest('[data-builder]')){builderModal();return}
   const preset=target.closest('[data-preset]');if(preset){document.querySelectorAll('[data-preset]').forEach(item=>item.classList.remove('selected'));preset.classList.add('selected');const button=document.querySelector('[data-create]');button.dataset.create=preset.dataset.preset;button.textContent=`Добавить ${preset.dataset.preset} STACK`;return}
@@ -58,4 +61,4 @@ document.addEventListener('click',event=>{
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelector('.modal-wrap')?.remove()});
 
 store.state.onboarded?render():renderOnboarding();
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=20').catch(()=>{}));
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=21').catch(()=>{}));
