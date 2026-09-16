@@ -21,9 +21,9 @@ document.addEventListener('click',event=>{
   const task=target.closest('[data-task]');if(task){const action=store.actions().find(a=>a.id===task.dataset.task);if(action?.checkin){checkinModal();return}const done=store.toggle(task.dataset.task);render();toast(done?'Выполнено':'Отметка снята');return}
   if(target.closest('[data-save-checkin]')){store.saveCheckin(+document.querySelector('#sleepRange').value,+document.querySelector('#energyRange').value);target.closest('.modal-wrap').remove();render();toast('Состояние сохранено');return}
   if(target.closest('[data-reset]')){store.resetToday();render();toast('Сегодняшние отметки сброшены');return}
-  const activate=target.closest('[data-activate]');if(activate){store.activate(activate.dataset.activate);render('today');toast('Активный стек изменён');return}
   const remove=target.closest('[data-remove]');if(remove){event.stopPropagation();modal(`<p class="eyebrow">Удаление</p><h2>Удалить ${remove.dataset.remove} STACK?</h2><p class="subtitle">Сохранённые отметки останутся в истории.</p><button class="danger" data-confirm-remove="${remove.dataset.remove}">Удалить стек</button>`);return}
   const confirmRemove=target.closest('[data-confirm-remove]');if(confirmRemove){store.remove(confirmRemove.dataset.confirmRemove);target.closest('.modal-wrap').remove();render('stacks');toast('Стек удалён');return}
+  const activate=target.closest('[data-activate]');if(activate){store.activate(activate.dataset.activate);render('today');toast('Активный стек изменён');return}
   if(target.closest('[data-builder]')){builderModal();return}
   const preset=target.closest('[data-preset]');if(preset){document.querySelectorAll('[data-preset]').forEach(x=>x.classList.remove('selected'));preset.classList.add('selected');const button=document.querySelector('[data-create]');button.dataset.create=preset.dataset.preset;button.textContent=`Создать ${preset.dataset.preset} STACK`;return}
   const create=target.closest('[data-create]');if(create){const added=store.install(create.dataset.create);target.closest('.modal-wrap').remove();render('stacks');toast(added?'Новый стек создан':'Этот стек уже существует');return}
