@@ -1,4 +1,4 @@
-import {STACK_LIBRARY,TODAY} from './data.js?v=15';
+import {STACK_LIBRARY,TODAY} from './data.js?v=16';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
@@ -13,12 +13,12 @@ function normalizeRecord(record={}){
 
 function migrate(){
   const current=JSON.parse(localStorage.getItem(KEY)||'null');
-  if(current){current.records=Object.fromEntries(Object.entries(current.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=current.experiments||{};current.experimentHistory=current.experimentHistory||{};current.customActions=current.customActions||[];current.customActions.forEach((action,index)=>{action.period=['morning','day','evening'].includes(action.period)?action.period:'day';action.days=Array.isArray(action.days)?action.days:[];action.steps=Array.isArray(action.steps)?action.steps:[];action.pauses=Array.isArray(action.pauses)?action.pauses:[];action.order=Number.isFinite(action.order)?action.order:index;action.revisions=Array.isArray(action.revisions)?action.revisions:[]});current.templateActions=current.templateActions||[];current.templateHistory=current.templateHistory||{};current.templateActions.forEach(id=>{if(!(current.templateHistory[id]||[]).some(period=>!period.to))(current.templateHistory[id]=current.templateHistory[id]||[]).push({from:TODAY(),to:null})});return current}
+  if(current){current.records=Object.fromEntries(Object.entries(current.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=current.experiments||{};current.experimentHistory=current.experimentHistory||{};current.weeklyReviews=Array.isArray(current.weeklyReviews)?current.weeklyReviews:[];current.customActions=current.customActions||[];current.customActions.forEach((action,index)=>{action.period=['morning','day','evening'].includes(action.period)?action.period:'day';action.days=Array.isArray(action.days)?action.days:[];action.steps=Array.isArray(action.steps)?action.steps:[];action.pauses=Array.isArray(action.pauses)?action.pauses:[];action.order=Number.isFinite(action.order)?action.order:index;action.revisions=Array.isArray(action.revisions)?action.revisions:[]});current.templateActions=current.templateActions||[];current.templateHistory=current.templateHistory||{};current.templateActions.forEach(id=>{if(!(current.templateHistory[id]||[]).some(period=>!period.to))(current.templateHistory[id]=current.templateHistory[id]||[]).push({from:TODAY(),to:null})});return current}
   const old=JSON.parse(localStorage.getItem('stack-moonvit-v2')||localStorage.getItem('stack-moonvit-v1')||'{}');
   const installed=['SLEEP',...(old.stacks||[]).map(s=>s.code)].filter((x,i,a)=>a.indexOf(x)===i&&STACK_LIBRARY[x]);
   const records=Object.fromEntries(Object.entries(old.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));
   if(!records[TODAY()])records[TODAY()]=normalizeRecord({done:old.done||[],sleep:null,energy:null});
-  return {onboarded:Boolean(old.onboarded),goal:old.goal||'SLEEP',moonConnected:old.moonConnected!==false,activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},customActions:[],templateActions:[],templateHistory:{},onboardingStep:0};
+  return {onboarded:Boolean(old.onboarded),goal:old.goal||'SLEEP',moonConnected:old.moonConnected!==false,activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},weeklyReviews:[],customActions:[],templateActions:[],templateHistory:{},onboardingStep:0};
 }
 
 class StackStore{
@@ -65,6 +65,15 @@ class StackStore{
     return {percent:Math.round(done/total*100),days:tracked.length,done,total};
   }
   discipline(code=this.state.activeStack){return this.disciplineStats(code).percent}
+  weeklyReview(code=this.state.activeStack){
+    const dates=this.lastDays().reverse(),previous=Array.from({length:7},(_,index)=>shiftDay(TODAY(),-(13-index))),active=dates.filter(date=>this.completed(code,date)>0||this.checkin(code,date)),done=dates.reduce((sum,date)=>sum+this.completed(code,date),0),total=dates.reduce((sum,date)=>sum+this.actions(code,date).length,0),percent=total?Math.round(done/total*100):0;
+    const states=dates.map(date=>this.checkin(code,date)).filter(Boolean).map(values=>this.metricAverage(values)),previousStates=previous.map(date=>this.checkin(code,date)).filter(Boolean).map(values=>this.metricAverage(values)),stateAverage=states.length?states.reduce((sum,value)=>sum+value,0)/states.length:null,previousAverage=previousStates.length?previousStates.reduce((sum,value)=>sum+value,0)/previousStates.length:null;
+    const ranked=dates.map(date=>{const planned=this.actions(code,date).length,completed=this.completed(code,date);return {date,completed,planned,ratio:planned?completed/planned:0}}).filter(day=>day.completed||this.checkin(code,day.date)).sort((a,b)=>b.ratio-a.ratio||b.completed-a.completed),best=ranked[0]||null,focus=this.weakestAction(code),saved=this.state.weeklyReviews.find(item=>item.code===code&&item.endedAt===TODAY())||null;
+    const observation=active.length<3?`Ещё ${3-active.length} ${active.length===2?'день':'дня'} с отметками — и обзор станет содержательнее.`:percent>=70?'На этой неделе действия выполнялись устойчиво. Сохрани ритм и меняй только один элемент.':percent>=40?'Ритм уже формируется. Одно выбранное улучшение полезнее, чем расширение списка.':'Неделя была неровной. Это наблюдение, а не провал: сократи фокус до одного выполнимого действия.';
+    return {code,dates,activeDays:active.length,ready:active.length>=3,done,total,percent,stateAverage,previousAverage,stateDelta:stateAverage!=null&&previousAverage!=null?stateAverage-previousAverage:null,best,focus,observation,saved};
+  }
+  saveWeeklyReview(code=this.state.activeStack){const review=this.weeklyReview(code);if(!review.ready)return false;const snapshot={code,endedAt:TODAY(),from:review.dates[0],activeDays:review.activeDays,done:review.done,total:review.total,percent:review.percent,stateAverage:review.stateAverage,best:review.best,focus:review.focus?{id:review.focus.id,title:review.focus.title}:null,observation:review.observation};this.state.weeklyReviews=[snapshot,...this.state.weeklyReviews.filter(item=>!(item.code===code&&item.endedAt===TODAY()))].slice(0,24);this.save();return snapshot}
+  lastWeeklyReview(code=this.state.activeStack){return this.state.weeklyReviews.find(item=>item.code===code)||null}
   dataDays(){return Object.values(this.state.records).filter(r=>r.done.length||Object.keys(r.checkins||{}).length||Object.keys(r.processSteps||{}).length).length}
   addCustomAction(input){
     const title=String(input.title||'').trim().slice(0,80),kind=input.kind==='process'?'process':'habit',schedule=['daily','weekdays','custom'].includes(input.schedule)?input.schedule:'daily',period=['morning','day','evening'].includes(input.period)?input.period:'day';
@@ -123,7 +132,7 @@ class StackStore{
     const incoming=payload?.format==='STACK_MOONVIT_BACKUP'?payload.state:payload?.state;
     if(!incoming||typeof incoming!=='object'||!incoming.records||!Array.isArray(incoming.installed))return false;
     const installed=incoming.installed.filter(code=>STACK_LIBRARY[code]);if(!installed.includes('SLEEP'))installed.unshift('SLEEP');
-    this.state={...this.state,...incoming,installed,activeStack:installed.includes(incoming.activeStack)?incoming.activeStack:'SLEEP',records:Object.fromEntries(Object.entries(incoming.records).map(([date,record])=>[date,normalizeRecord(record)])),experiments:incoming.experiments||{},experimentHistory:incoming.experimentHistory||{},customActions:incoming.customActions||[],templateActions:incoming.templateActions||[],templateHistory:incoming.templateHistory||{}};
+    this.state={...this.state,...incoming,installed,activeStack:installed.includes(incoming.activeStack)?incoming.activeStack:'SLEEP',records:Object.fromEntries(Object.entries(incoming.records).map(([date,record])=>[date,normalizeRecord(record)])),experiments:incoming.experiments||{},experimentHistory:incoming.experimentHistory||{},weeklyReviews:Array.isArray(incoming.weeklyReviews)?incoming.weeklyReviews:[],customActions:incoming.customActions||[],templateActions:incoming.templateActions||[],templateHistory:incoming.templateHistory||{}};
     this.ensureToday();this.save();return true;
   }
 }

@@ -159,3 +159,20 @@ h3{font-size:15px;margin:0}
 .category-ready{margin-top:28px}
 .category-ready p{margin:0 0 10px;font-size:13px;line-height:1.5}
 .category-ready small{color:var(--muted);font-size:10px;line-height:1.4}
+.weekly{margin-top:20px;background:#e9e5da}
+.weekly-title{display:flex;align-items:start;justify-content:space-between;gap:12px}
+.weekly-title .eyebrow{margin-bottom:6px}
+.weekly-title>small{font-size:9px;color:var(--muted);white-space:nowrap}
+.weekly-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:16px 0}
+.weekly-metrics span,.review-grid span{min-width:0;padding:10px;border-radius:12px;background:#ffffff80}
+.weekly-metrics b,.weekly-metrics small,.review-grid b,.review-grid small{display:block}
+.weekly-metrics b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.weekly-metrics small,.review-grid small{margin-top:3px;color:var(--muted);font-size:8px;line-height:1.3}
+.weekly .primary{margin-top:14px;background:var(--moss)}
+.review-grid{display:grid;gap:8px;margin:20px 0}
+.review-grid b{font-size:18px}
+.review-note,.review-focus{margin-top:14px;padding:16px;border-radius:15px;background:var(--card);border:1px solid var(--line)}
+.review-note p:last-child{margin:0;font-size:13px;line-height:1.55}
+.review-focus h3{font-size:16px;margin-bottom:7px}
+.review-save{margin-top:16px;border:1px solid var(--line)}
+.saved-review{margin:18px 0 0;text-align:center;color:var(--moss);font-size:11px}

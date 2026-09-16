@@ -1,5 +1,5 @@
-import {store} from './store.js?v=15';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,modal,manageStackModal,customActionModal,processModal} from './ui.js?v=15';
+import {store} from './store.js?v=16';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,customActionModal,processModal} from './ui.js?v=16';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -43,6 +43,9 @@ document.addEventListener('click',event=>{
   const preset=target.closest('[data-preset]');if(preset){document.querySelectorAll('[data-preset]').forEach(item=>item.classList.remove('selected'));preset.classList.add('selected');const button=document.querySelector('[data-create]');button.dataset.create=preset.dataset.preset;button.textContent=`Добавить ${preset.dataset.preset} STACK`;return}
   const create=target.closest('[data-create]');if(create){const code=create.dataset.create,added=store.install(code);create.closest('.modal-wrap').remove();render('stacks');if(added)manageStackModal(code);toast(added?'Категория добавлена':'Эта категория уже существует');return}
   const date=target.closest('[data-date]');if(date){dayModal(date.dataset.date);return}
+  if(target.closest('[data-weekly-review]')){weeklyReviewModal();return}
+  if(target.closest('[data-save-weekly]')){store.saveWeeklyReview();target.closest('.modal-wrap').remove();render('insights');toast('Итог недели сохранён');return}
+  if(target.closest('[data-weekly-experiment]')){store.startExperiment();target.closest('.modal-wrap').remove();render('insights');toast('Одно улучшение выбрано');return}
   if(target.closest('[data-start-experiment]')){store.startExperiment();render('insights');toast('Эксперимент начат на 3 дня');return}
   if(target.closest('[data-finish-experiment]')){store.finishExperiment();render('insights');toast('Эксперимент завершён');return}
   if(target.closest('[data-toggle-moon]')){store.state.moonConnected=!store.state.moonConnected;store.save();render('profile');toast(store.state.moonConnected?'Moonvit подключён':'Moonvit отключён');return}
@@ -53,4 +56,4 @@ document.addEventListener('click',event=>{
 });
 
 store.state.onboarded?render():renderOnboarding();
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=15').catch(()=>{}));
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=16').catch(()=>{}));
