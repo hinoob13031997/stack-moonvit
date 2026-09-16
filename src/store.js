@@ -37,6 +37,30 @@ class StackStore{
   completed(code=this.state.activeStack,date=TODAY()){const r=this.record(date);return r?r.done.filter(id=>this.actions(code).some(a=>a.id===id)).length:0}
   discipline(code=this.state.activeStack){const actions=this.actions(code),days=this.lastDays();if(!actions.length)return 0;return Math.round(days.reduce((sum,date)=>sum+this.completed(code,date)/actions.length,0)/days.length*100)}
   dataDays(){return Object.values(this.state.records).filter(r=>r.done.length||Object.keys(r.checkins||{}).length).length}
+  relationships(){
+    const codes=this.state.installed.filter(code=>STACK_LIBRARY[code]);
+    const pairs=[];
+    for(let i=0;i<codes.length;i++)for(let j=i+1;j<codes.length;j++){
+      const left=codes[i],right=codes[j],points=[];
+      Object.values(this.state.records).forEach(record=>{
+        const a=record.checkins?.[left],b=record.checkins?.[right];
+        if(a&&b)points.push([this.metricAverage(a),this.metricAverage(b)]);
+      });
+      pairs.push({left,right,points});
+    }
+    if(!pairs.length)return {ready:false,reason:'single',overlap:0,needed:5};
+    const eligible=pairs.filter(pair=>pair.points.length>=5);
+    if(!eligible.length){const closest=pairs.sort((a,b)=>b.points.length-a.points.length)[0];return {ready:false,reason:'data',left:closest.left,right:closest.right,overlap:closest.points.length,needed:5-closest.points.length}}
+    const measured=eligible.map(pair=>({...pair,correlation:this.correlation(pair.points)})).sort((a,b)=>Math.abs(b.correlation)-Math.abs(a.correlation));
+    return {ready:true,...measured[0],overlap:measured[0].points.length};
+  }
+  metricAverage(values){const numbers=Object.values(values).map(Number).filter(Number.isFinite);return numbers.length?numbers.reduce((sum,value)=>sum+value,0)/numbers.length:0}
+  correlation(points){
+    const count=points.length,avgX=points.reduce((sum,p)=>sum+p[0],0)/count,avgY=points.reduce((sum,p)=>sum+p[1],0)/count;
+    const numerator=points.reduce((sum,p)=>sum+(p[0]-avgX)*(p[1]-avgY),0);
+    const spreadX=Math.sqrt(points.reduce((sum,p)=>sum+(p[0]-avgX)**2,0)),spreadY=Math.sqrt(points.reduce((sum,p)=>sum+(p[1]-avgY)**2,0));
+    return spreadX&&spreadY?numerator/(spreadX*spreadY):0;
+  }
 }
 
 export const store=new StackStore();
