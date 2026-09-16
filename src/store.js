@@ -29,7 +29,12 @@ class StackStore{
   checkin(code=this.state.activeStack,date=TODAY()){return this.record(date)?.checkins?.[code]||null}
   toggle(actionId){const r=this.record();r.done=r.done.includes(actionId)?r.done.filter(x=>x!==actionId):[...r.done,actionId];this.save();return r.done.includes(actionId)}
   saveCheckin(code,values){const r=this.record();r.checkins[code]=values;const id=this.stack(code).checkin.id;if(!r.done.includes(id))r.done.push(id);this.save()}
-  resetToday(){this.state.records[TODAY()]=emptyRecord();this.save()}
+  resetToday(code=this.state.activeStack){
+    const record=this.record(),ids=new Set(this.actions(code).map(action=>action.id));
+    record.done=record.done.filter(id=>!ids.has(id));
+    delete record.checkins[code];
+    this.save();
+  }
   install(code){if(STACK_LIBRARY[code]&&!this.state.installed.includes(code)){this.state.installed.push(code);this.save();return true}return false}
   remove(code){if(code==='SLEEP')return false;this.state.installed=this.state.installed.filter(x=>x!==code);if(this.state.activeStack===code)this.state.activeStack='SLEEP';this.save();return true}
   activate(code){if(this.state.installed.includes(code)){this.state.activeStack=code;this.save();return true}return false}

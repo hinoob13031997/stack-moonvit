@@ -19,8 +19,9 @@ document.addEventListener('click',event=>{
   const moon=target.closest('[data-moon]');if(moon){store.state.moonConnected=moon.dataset.moon==='yes';store.state.onboardingStep=2;store.save();renderOnboarding();return}
   if(target.closest('[data-finish]')){store.install(store.state.goal);store.state.activeStack=store.state.goal;store.state.onboarded=true;store.state.onboardingStep=0;store.save();render();return}
   const task=target.closest('[data-task]');if(task){const action=store.actions().find(a=>a.id===task.dataset.task);if(action?.checkin){checkinModal();return}const done=store.toggle(task.dataset.task);render();toast(done?'Выполнено':'Отметка снята');return}
+  const quickStack=target.closest('[data-quick-stack]');if(quickStack){store.activate(quickStack.dataset.quickStack);render('today');return}
   const save=target.closest('[data-save-checkin]');if(save){const values=Object.fromEntries([...document.querySelectorAll('[data-metric]')].map(input=>[input.dataset.metric,+input.value]));store.saveCheckin(save.dataset.saveCheckin,values);save.closest('.modal-wrap').remove();render();toast('Состояние сохранено');return}
-  if(target.closest('[data-reset]')){store.resetToday();render();toast('Сегодняшние отметки сброшены');return}
+  if(target.closest('[data-reset]')){store.resetToday();render();toast('Отметки текущего стека сброшены');return}
   const remove=target.closest('[data-remove]');if(remove){event.stopPropagation();modal(`<p class="eyebrow">Удаление</p><h2>Удалить ${remove.dataset.remove} STACK?</h2><p class="subtitle">Сохранённые отметки останутся в истории.</p><button class="danger" data-confirm-remove="${remove.dataset.remove}">Удалить стек</button>`);return}
   const confirmRemove=target.closest('[data-confirm-remove]');if(confirmRemove){store.remove(confirmRemove.dataset.confirmRemove);confirmRemove.closest('.modal-wrap').remove();render('stacks');toast('Стек удалён');return}
   const activate=target.closest('[data-activate]');if(activate){store.activate(activate.dataset.activate);render('today');toast('Активный стек изменён');return}
