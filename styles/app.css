@@ -112,3 +112,29 @@ h3{font-size:15px;margin:0}
 .quick-stacks button.active>small{background:#ffffff20;color:#fff}
 .file-picker{display:block;margin-top:22px;padding:15px;border-radius:14px;background:var(--ink);color:#fff;text-align:center;font:600 13px Manrope;cursor:pointer}
 .file-picker input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.stack-card .manage{align-self:flex-start;margin-top:13px;border:0;background:none;padding:0;color:inherit;font:600 10px Manrope;text-decoration:underline;text-underline-offset:3px;opacity:.75}
+.form-grid{display:grid;gap:14px;margin-top:22px}
+.field{display:grid;gap:7px;font-size:11px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px;color:var(--ink);font:13px Manrope;resize:vertical}
+.field small{font-size:9px;font-weight:400}
+.day-picks{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.day-picks label{position:relative}
+.day-picks input{position:absolute;opacity:0}
+.day-picks span{height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;background:var(--card);font-size:9px}
+.day-picks input:checked+span{background:var(--ink);border-color:var(--ink);color:#fff}
+.manage-list{display:grid;gap:8px;margin-top:20px}
+.manage-row{display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--card)}
+.manage-row.paused{opacity:.5}
+.manage-row>span{min-width:0;flex:1}
+.manage-row b,.manage-row small{display:block}
+.manage-row b{overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.manage-row small{margin-top:4px;color:var(--muted);font-size:9px}
+.manage-row>div{display:flex;gap:3px}
+.manage-row button{width:31px;height:31px;border:0;border-radius:50%;background:var(--sage);color:var(--moss)}
+.empty-state{padding:18px;border:1px dashed var(--line);border-radius:13px;color:var(--muted);font-size:11px;text-align:center}
+.process-detail button{display:flex;align-items:center;gap:11px;width:100%;padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--card);color:var(--ink);font:12px Manrope;text-align:left}
+.process-detail button i{width:24px;height:24px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;font-style:normal;font-size:10px}
+.process-detail button.done{opacity:.55}
+.process-detail button.done i{background:var(--moss);color:#fff}
+.task>i{font-size:9px}
+.day-picks.hidden,.field.hidden{display:none}

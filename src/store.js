@@ -1,22 +1,22 @@
 import {STACK_LIBRARY,TODAY} from './data.js';
 
 const KEY='stack-moonvit-v3';
-const emptyRecord=()=>({done:[],checkins:{}});
+const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
 
 function normalizeRecord(record={}){
-  const normalized={...emptyRecord(),...record,done:Array.isArray(record.done)?record.done:[],checkins:{...(record.checkins||{})}};
+  const normalized={...emptyRecord(),...record,done:Array.isArray(record.done)?record.done:[],checkins:{...(record.checkins||{})},processSteps:{...(record.processSteps||{})}};
   if((record.sleep!=null||record.energy!=null)&&!normalized.checkins.SLEEP) normalized.checkins.SLEEP={sleep:record.sleep,energy:record.energy};
   return normalized;
 }
 
 function migrate(){
   const current=JSON.parse(localStorage.getItem(KEY)||'null');
-  if(current){current.records=Object.fromEntries(Object.entries(current.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=current.experiments||{};current.experimentHistory=current.experimentHistory||{};return current}
+  if(current){current.records=Object.fromEntries(Object.entries(current.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=current.experiments||{};current.experimentHistory=current.experimentHistory||{};current.customActions=current.customActions||[];return current}
   const old=JSON.parse(localStorage.getItem('stack-moonvit-v2')||localStorage.getItem('stack-moonvit-v1')||'{}');
   const installed=['SLEEP',...(old.stacks||[]).map(s=>s.code)].filter((x,i,a)=>a.indexOf(x)===i&&STACK_LIBRARY[x]);
   const records=Object.fromEntries(Object.entries(old.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));
   if(!records[TODAY()])records[TODAY()]=normalizeRecord({done:old.done||[],sleep:null,energy:null});
-  return {onboarded:Boolean(old.onboarded),goal:old.goal||'SLEEP',moonConnected:old.moonConnected!==false,activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},onboardingStep:0};
+  return {onboarded:Boolean(old.onboarded),goal:old.goal||'SLEEP',moonConnected:old.moonConnected!==false,activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},customActions:[],onboardingStep:0};
 }
 
 class StackStore{
@@ -25,13 +25,24 @@ class StackStore{
   save(){localStorage.setItem(KEY,JSON.stringify(this.state))}
   record(date=TODAY()){return this.state.records[date]||null}
   stack(code=this.state.activeStack){return STACK_LIBRARY[code]||STACK_LIBRARY.SLEEP}
-  actions(code=this.state.activeStack){return this.stack(code).actions.filter(a=>this.state.moonConnected||!a.product)}
+  actions(code=this.state.activeStack,date=TODAY()){const base=this.stack(code).actions.filter(a=>this.state.moonConnected||!a.product);return [...base,...this.state.customActions.filter(action=>action.stackCode===code&&this.isScheduled(action,date))]}
+  customActions(code=this.state.activeStack){return this.state.customActions.filter(action=>action.stackCode===code&&!action.deletedAt)}
+  isScheduled(action,date=TODAY()){
+    const record=this.record(date),hasHistory=record?.done.includes(action.id)||Boolean(record?.processSteps?.[action.id]?.length);
+    const wasPaused=(action.pauses||[]).some(pause=>date>=pause.from&&date<=pause.to);
+    if(date<action.createdAt||action.deletedAt&&date>=action.deletedAt&&(date===TODAY()||!hasHistory)||action.pausedAt&&date>=action.pausedAt&&(date===TODAY()||!hasHistory)||wasPaused&&!hasHistory)return false;
+    const day=new Date(`${date}T12:00:00`).getDay();
+    if(action.schedule==='weekdays')return day>=1&&day<=5;
+    if(action.schedule==='custom')return action.days.includes(day);
+    return action.schedule==='daily';
+  }
   checkin(code=this.state.activeStack,date=TODAY()){return this.record(date)?.checkins?.[code]||null}
   toggle(actionId){const r=this.record();r.done=r.done.includes(actionId)?r.done.filter(x=>x!==actionId):[...r.done,actionId];this.save();return r.done.includes(actionId)}
   saveCheckin(code,values){const r=this.record();r.checkins[code]=values;const id=this.stack(code).checkin.id;if(!r.done.includes(id))r.done.push(id);this.save()}
   resetToday(code=this.state.activeStack){
     const record=this.record(),ids=new Set(this.actions(code).map(action=>action.id));
     record.done=record.done.filter(id=>!ids.has(id));
+    ids.forEach(id=>delete record.processSteps[id]);
     delete record.checkins[code];
     this.save();
   }
@@ -39,15 +50,27 @@ class StackStore{
   remove(code){if(code==='SLEEP')return false;this.state.installed=this.state.installed.filter(x=>x!==code);delete this.state.experiments[code];if(this.state.activeStack===code)this.state.activeStack='SLEEP';this.save();return true}
   activate(code){if(this.state.installed.includes(code)){this.state.activeStack=code;this.save();return true}return false}
   lastDays(count=7){return Array.from({length:count},(_,i)=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`})}
-  completed(code=this.state.activeStack,date=TODAY()){const r=this.record(date);return r?r.done.filter(id=>this.actions(code).some(a=>a.id===id)).length:0}
+  completed(code=this.state.activeStack,date=TODAY()){const r=this.record(date);return r?r.done.filter(id=>this.actions(code,date).some(a=>a.id===id)).length:0}
   disciplineStats(code=this.state.activeStack){
-    const actions=this.actions(code),days=this.lastDays().reverse(),first=days.findIndex(date=>this.completed(code,date)>0||this.checkin(code,date));
-    if(!actions.length||first<0)return {percent:0,days:0,done:0,total:0};
-    const tracked=days.slice(first),done=tracked.reduce((sum,date)=>sum+this.completed(code,date),0),total=tracked.length*actions.length;
+    const days=this.lastDays().reverse(),first=days.findIndex(date=>this.completed(code,date)>0||this.checkin(code,date));
+    if(first<0)return {percent:0,days:0,done:0,total:0};
+    const tracked=days.slice(first),done=tracked.reduce((sum,date)=>sum+this.completed(code,date),0),total=tracked.reduce((sum,date)=>sum+this.actions(code,date).length,0);
+    if(!total)return {percent:0,days:tracked.length,done:0,total:0};
     return {percent:Math.round(done/total*100),days:tracked.length,done,total};
   }
   discipline(code=this.state.activeStack){return this.disciplineStats(code).percent}
-  dataDays(){return Object.values(this.state.records).filter(r=>r.done.length||Object.keys(r.checkins||{}).length).length}
+  dataDays(){return Object.values(this.state.records).filter(r=>r.done.length||Object.keys(r.checkins||{}).length||Object.keys(r.processSteps||{}).length).length}
+  addCustomAction(input){
+    const title=String(input.title||'').trim().slice(0,80),kind=input.kind==='process'?'process':'habit',schedule=['daily','weekdays','custom'].includes(input.schedule)?input.schedule:'daily',period=['morning','day','evening'].includes(input.period)?input.period:'day';
+    const days=[...new Set((input.days||[]).map(Number).filter(day=>day>=0&&day<=6))],steps=kind==='process'?(input.steps||[]).map(step=>String(step).trim()).filter(Boolean).slice(0,8):[];
+    if(!title||schedule==='custom'&&!days.length||kind==='process'&&!steps.length)return false;
+    const id=`custom-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;this.state.customActions.push({id,stackCode:input.stackCode||this.state.activeStack,kind,title,schedule,days,period,steps:steps.map((step,index)=>({id:`${id}-step-${index}`,title:step})),createdAt:TODAY(),pausedAt:null,pauses:[],deletedAt:null,custom:true});this.save();return id;
+  }
+  updateCustomAction(id,input){const action=this.state.customActions.find(item=>item.id===id&&!item.deletedAt);if(!action)return false;const title=String(input.title||'').trim().slice(0,80),schedule=['daily','weekdays','custom'].includes(input.schedule)?input.schedule:'daily',period=['morning','day','evening'].includes(input.period)?input.period:'day',days=[...new Set((input.days||[]).map(Number).filter(day=>day>=0&&day<=6))],steps=action.kind==='process'?(input.steps||[]).map(step=>String(step).trim()).filter(Boolean).slice(0,8):[];if(!title||schedule==='custom'&&!days.length||action.kind==='process'&&!steps.length)return false;action.title=title;action.schedule=schedule;action.period=period;action.days=days;if(action.kind==='process')action.steps=steps.map((step,index)=>action.steps[index]?.title===step?action.steps[index]:{id:`${id}-step-${Date.now()}-${index}`,title:step});this.save();return true}
+  toggleCustomAction(id){const action=this.state.customActions.find(item=>item.id===id&&!item.deletedAt);if(!action)return false;if(action.pausedAt){if(action.pausedAt!==TODAY())action.pauses=[...(action.pauses||[]),{from:action.pausedAt,to:TODAY()}];action.pausedAt=null}else action.pausedAt=TODAY();this.save();return !action.pausedAt}
+  deleteCustomAction(id){const action=this.state.customActions.find(item=>item.id===id&&!item.deletedAt);if(!action)return false;action.deletedAt=TODAY();this.save();return true}
+  processProgress(action,date=TODAY()){const done=this.record(date)?.processSteps?.[action.id]||[];return {done:done.filter(id=>action.steps.some(step=>step.id===id)).length,total:action.steps.length}}
+  toggleProcessStep(actionId,stepId){const action=this.state.customActions.find(item=>item.id===actionId&&item.kind==='process'&&!item.deletedAt);if(!action||!action.steps.some(step=>step.id===stepId))return false;const record=this.record(),current=record.processSteps[actionId]||[];record.processSteps[actionId]=current.includes(stepId)?current.filter(id=>id!==stepId):[...current,stepId];const complete=action.steps.every(step=>record.processSteps[actionId].includes(step.id));record.done=complete?[...new Set([...record.done,actionId])]:record.done.filter(id=>id!==actionId);this.save();return complete}
   relationships(){
     const codes=this.state.installed.filter(code=>STACK_LIBRARY[code]);
     const pairs=[];
