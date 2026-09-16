@@ -1,4 +1,4 @@
-import {STACK_LIBRARY,TODAY} from './data.js';
+import {STACK_LIBRARY,TODAY} from './data.js?v=14';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
