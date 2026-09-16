@@ -138,3 +138,17 @@ h3{font-size:15px;margin:0}
 .process-detail button.done i{background:var(--moss);color:#fff}
 .task>i{font-size:9px}
 .day-picks.hidden,.field.hidden{display:none}
+.empty-today{margin-top:4px;text-align:center;padding:24px 18px}
+.empty-today .subtitle{margin-top:8px}
+.modal-section{margin-top:26px}
+.template-list{display:grid;gap:7px}
+.template-list>button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--card);color:var(--ink);font-family:Manrope;text-align:left}
+.template-list b,.template-list small{display:block}
+.template-list b{font-size:11px}
+.template-list small{margin-top:3px;color:var(--muted);font-size:9px}
+.template-list em{font-style:normal;font-size:9px;color:var(--moss)}
+.template-list>button.added{background:var(--sage);border-color:#c8d7c5}
+.category-advice{color:#8a5b32!important}
+.category-ready{margin-top:28px}
+.category-ready p{margin:0 0 10px;font-size:13px;line-height:1.5}
+.category-ready small{color:var(--muted);font-size:10px;line-height:1.4}
