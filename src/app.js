@@ -29,6 +29,8 @@ document.addEventListener('click',event=>{
   const preset=target.closest('[data-preset]');if(preset){document.querySelectorAll('[data-preset]').forEach(item=>item.classList.remove('selected'));preset.classList.add('selected');const button=document.querySelector('[data-create]');button.dataset.create=preset.dataset.preset;button.textContent=`Добавить ${preset.dataset.preset} STACK`;return}
   const create=target.closest('[data-create]');if(create){const added=store.install(create.dataset.create);create.closest('.modal-wrap').remove();render('stacks');toast(added?'Новый стек добавлен':'Этот стек уже существует');return}
   const date=target.closest('[data-date]');if(date){dayModal(date.dataset.date);return}
+  if(target.closest('[data-start-experiment]')){store.startExperiment();render('insights');toast('Эксперимент начат на 3 дня');return}
+  if(target.closest('[data-finish-experiment]')){store.finishExperiment();render('insights');toast('Эксперимент завершён');return}
   if(target.closest('[data-close]')){target.closest('.modal-wrap').remove();return}
   if(target.closest('[data-restart]')){store.state.onboarded=false;store.state.onboardingStep=0;store.save();renderOnboarding()}
 });
