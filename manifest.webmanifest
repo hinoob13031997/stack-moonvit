@@ -1,0 +1,19 @@
+{
+  "name": "STACK × Moonvit",
+  "short_name": "STACK",
+  "description": "Минималистичная система дисциплины, состояния и постепенного улучшения.",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f1eb",
+  "theme_color": "#f3f1eb",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

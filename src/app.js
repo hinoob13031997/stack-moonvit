@@ -10,6 +10,7 @@ function renderOnboarding(){app.innerHTML=onboardingView();nav.classList.add('hi
 function toast(text){clearTimeout(toastTimer);toastEl.textContent=text;toastEl.classList.add('show');toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1700)}
 
 document.addEventListener('input',event=>{if(event.target.matches('[data-metric]'))document.querySelector(`[data-output="${event.target.dataset.metric}"]`).value=event.target.value});
+document.addEventListener('change',event=>{if(!event.target.matches('[data-backup-file]'))return;const file=event.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const restored=store.restore(JSON.parse(reader.result));if(!restored)throw new Error('invalid');event.target.closest('.modal-wrap').remove();render('profile');toast('Резервная копия восстановлена')}catch{toast('Не удалось прочитать резервную копию')}};reader.readAsText(file)});
 
 document.addEventListener('click',event=>{
   const target=event.target;
@@ -33,8 +34,11 @@ document.addEventListener('click',event=>{
   if(target.closest('[data-start-experiment]')){store.startExperiment();render('insights');toast('Эксперимент начат на 3 дня');return}
   if(target.closest('[data-finish-experiment]')){store.finishExperiment();render('insights');toast('Эксперимент завершён');return}
   if(target.closest('[data-toggle-moon]')){store.state.moonConnected=!store.state.moonConnected;store.save();render('profile');toast(store.state.moonConnected?'Moonvit подключён':'Moonvit отключён');return}
+  if(target.closest('[data-export]')){const blob=new Blob([JSON.stringify(store.backup(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`stack-moonvit-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),500);toast('Резервная копия создана');return}
+  if(target.closest('[data-import]')){modal('<p class="eyebrow">Восстановление</p><h2>Выбери резервную копию</h2><p class="subtitle">Текущие данные на этом устройстве будут заменены содержимым файла.</p><label class="file-picker">Выбрать файл<input data-backup-file type="file" accept="application/json,.json"></label>');return}
   if(target.closest('[data-close]')){target.closest('.modal-wrap').remove();return}
   if(target.closest('[data-restart]')){store.state.onboarded=false;store.state.onboardingStep=0;store.save();renderOnboarding()}
 });
 
 store.state.onboarded?render():renderOnboarding();
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=10').catch(()=>{}));

@@ -110,3 +110,5 @@ h3{font-size:15px;margin:0}
 .quick-stacks button>small{padding:2px 5px;border-radius:99px;background:var(--sage);color:var(--moss);font-size:8px}
 .quick-stacks button.active{background:var(--ink);border-color:var(--ink);color:#fff}
 .quick-stacks button.active>small{background:#ffffff20;color:#fff}
+.file-picker{display:block;margin-top:22px;padding:15px;border-radius:14px;background:var(--ink);color:#fff;text-align:center;font:600 13px Manrope;cursor:pointer}
+.file-picker input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
