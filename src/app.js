@@ -1,5 +1,5 @@
-import {store} from './store.js?v=16';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,customActionModal,processModal} from './ui.js?v=16';
+import {store} from './store.js?v=17';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,customActionModal,processModal} from './ui.js?v=17';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -15,6 +15,7 @@ document.addEventListener('change',event=>{if(event.target.id==='customKind'){do
 
 document.addEventListener('click',event=>{
   const target=event.target;
+  if(target.matches('.modal-wrap')){target.remove();return}
   const view=target.closest('[data-view]');if(view){render(view.dataset.view);return}
   const goal=target.closest('[data-goal]');if(goal){store.state.goal=goal.dataset.goal;store.save();renderOnboarding();return}
   if(target.closest('[data-next]')){store.state.onboardingStep=1;store.save();renderOnboarding();return}
@@ -54,6 +55,7 @@ document.addEventListener('click',event=>{
   if(target.closest('[data-close]')){target.closest('.modal-wrap').remove();return}
   if(target.closest('[data-restart]')){store.state.onboarded=false;store.state.onboardingStep=0;store.save();renderOnboarding()}
 });
+document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelector('.modal-wrap')?.remove()});
 
 store.state.onboarded?render():renderOnboarding();
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=16').catch(()=>{}));
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=17').catch(()=>{}));
