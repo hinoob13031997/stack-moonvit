@@ -14,10 +14,10 @@ h2{font-size:20px;letter-spacing:-.025em;margin:0}
 h3{font-size:15px;margin:0}
 .subtitle{color:var(--muted);font-size:13px;line-height:1.55;margin:0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px}
-.hero{margin-top:22px;padding:17px;border-radius:18px;background:var(--ink);color:#fff}
-.hero>div:first-child{display:flex;justify-content:space-between;gap:12px}
-.hero p{max-width:260px;margin:5px 0 0;color:#bec7bf;font-size:11px;line-height:1.45}
-.hero>span{float:right;margin-top:-31px;font-size:9px;color:#cbd1cb;letter-spacing:.08em}
+.hero{position:relative;margin-top:22px;padding:17px;border-radius:18px;background:var(--ink);color:#fff}
+.hero>div:first-child{display:block;padding-right:86px}
+.hero p{max-width:100%;margin:5px 0 0;color:#bec7bf;font-size:11px;line-height:1.45}
+.hero>span{position:absolute;top:19px;right:17px;margin:0;font-size:9px;color:#cbd1cb;letter-spacing:.08em;white-space:nowrap}
 .progress{height:4px;background:#ffffff24;border-radius:3px;margin:18px 0 11px;overflow:hidden}
 .progress i{display:block;height:100%;background:#e8c9a7;border-radius:3px;transition:width .25s}
 .hero-foot{display:flex;align-items:center;justify-content:space-between;min-height:27px}

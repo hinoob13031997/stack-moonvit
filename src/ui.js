@@ -1,5 +1,5 @@
-import {STACK_LIBRARY,TODAY,formatDay,longToday} from './data.js?v=14';
-import {store} from './store.js?v=14';
+import {STACK_LIBRARY,TODAY,formatDay,longToday} from './data.js?v=15';
+import {store} from './store.js?v=15';
 
 const header=(title,subtitle)=>`<header class="topbar"><div class="brand">STACK <span>× MOONVIT</span></div><div class="avatar">А</div></header><p class="eyebrow">${longToday()}</p><h1>${title}</h1><p class="subtitle">${subtitle}</p>`;
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
