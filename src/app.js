@@ -1,5 +1,5 @@
-import {store} from './store.js?v=17';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,customActionModal,processModal} from './ui.js?v=17';
+import {store} from './store.js?v=18';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,customActionModal,processModal} from './ui.js?v=18';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -58,4 +58,4 @@ document.addEventListener('click',event=>{
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelector('.modal-wrap')?.remove()});
 
 store.state.onboarded?render():renderOnboarding();
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=17').catch(()=>{}));
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=18').catch(()=>{}));
