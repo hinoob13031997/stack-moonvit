@@ -60,6 +60,9 @@ h3{font-size:15px;margin:0}
 .period-group.complete .task{opacity:.48}
 .insight{background:#e9e5da}
 .insight p{font-size:14px;line-height:1.55;margin:0 0 14px}
+.stack-explainer{margin-top:20px;padding:14px 15px;border-left:2px solid var(--moss);background:#e9e5da;border-radius:0 14px 14px 0}
+.stack-explainer b{font-size:12px}
+.stack-explainer p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
 .stack-card{position:relative;min-height:160px;padding:17px;border:1px solid var(--line);border-radius:18px;background:var(--card);display:flex;flex-direction:column;justify-content:flex-start;cursor:pointer}
 .stack-card.active{background:var(--moon);color:#fff;border-color:var(--moon)}
 .stack-card>strong{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--sage);color:var(--moss)}
@@ -149,7 +152,7 @@ h3{font-size:15px;margin:0}
 .stack-card .manage{align-self:flex-start;margin-top:13px;border:0;background:none;padding:0;color:inherit;font:600 10px Manrope;text-decoration:underline;text-underline-offset:3px;opacity:.75}
 .form-grid{display:grid;gap:14px;margin-top:22px}
 .field{display:grid;gap:7px;font-size:11px;font-weight:600;color:var(--muted)}
-.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px;color:var(--ink);font:13px Manrope;resize:vertical}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px;color:var(--ink);font:16px Manrope;resize:vertical}
 .field small{font-size:9px;font-weight:400}
 .day-picks{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .day-picks label{position:relative}
