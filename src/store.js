@@ -1,4 +1,4 @@
-import {STACK_LIBRARY,TODAY} from './data.js?v=21';
+import {STACK_LIBRARY,TODAY} from './data.js?v=22';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
@@ -13,12 +13,12 @@ function normalizeRecord(record={}){
 
 function migrate(){
   const current=JSON.parse(localStorage.getItem(KEY)||'null');
-  if(current){current.records=Object.fromEntries(Object.entries(current.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=current.experiments||{};current.experimentHistory=current.experimentHistory||{};current.weeklyReviews=Array.isArray(current.weeklyReviews)?current.weeklyReviews:[];current.customActions=current.customActions||[];current.customActions.forEach((action,index)=>{action.period=['morning','day','evening'].includes(action.period)?action.period:'day';action.days=Array.isArray(action.days)?action.days:[];action.steps=Array.isArray(action.steps)?action.steps:[];action.pauses=Array.isArray(action.pauses)?action.pauses:[];action.order=Number.isFinite(action.order)?action.order:index;action.revisions=Array.isArray(action.revisions)?action.revisions:[]});current.templateActions=current.templateActions||[];current.templateHistory=current.templateHistory||{};current.templateActions.forEach(id=>{if(!(current.templateHistory[id]||[]).some(period=>!period.to))(current.templateHistory[id]=current.templateHistory[id]||[]).push({from:TODAY(),to:null})});return current}
+  if(current){current.records=Object.fromEntries(Object.entries(current.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=current.experiments||{};current.experimentHistory=current.experimentHistory||{};current.weeklyReviews=Array.isArray(current.weeklyReviews)?current.weeklyReviews:[];current.customActions=current.customActions||[];current.todayHintDismissed=Boolean(current.todayHintDismissed);current.customActions.forEach((action,index)=>{action.period=['morning','day','evening'].includes(action.period)?action.period:'day';action.days=Array.isArray(action.days)?action.days:[];action.steps=Array.isArray(action.steps)?action.steps:[];action.pauses=Array.isArray(action.pauses)?action.pauses:[];action.order=Number.isFinite(action.order)?action.order:index;action.revisions=Array.isArray(action.revisions)?action.revisions:[]});current.templateActions=current.templateActions||[];current.templateHistory=current.templateHistory||{};current.templateActions.forEach(id=>{if(!(current.templateHistory[id]||[]).some(period=>!period.to))(current.templateHistory[id]=current.templateHistory[id]||[]).push({from:TODAY(),to:null})});return current}
   const old=JSON.parse(localStorage.getItem('stack-moonvit-v2')||localStorage.getItem('stack-moonvit-v1')||'{}');
   const installed=['SLEEP',...(old.stacks||[]).map(s=>s.code)].filter((x,i,a)=>a.indexOf(x)===i&&STACK_LIBRARY[x]);
   const records=Object.fromEntries(Object.entries(old.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));
   if(!records[TODAY()])records[TODAY()]=normalizeRecord({done:old.done||[],sleep:null,energy:null});
-  return {onboarded:Boolean(old.onboarded),goal:old.goal||'SLEEP',moonConnected:old.moonConnected!==false,activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},weeklyReviews:[],customActions:[],templateActions:[],templateHistory:{},onboardingStep:0};
+  return {onboarded:Boolean(old.onboarded),goal:old.goal||'SLEEP',moonConnected:Boolean(old.moonConnected),activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},weeklyReviews:[],customActions:[],templateActions:[],templateHistory:{},todayHintDismissed:false,onboardingStep:0};
 }
 
 class StackStore{

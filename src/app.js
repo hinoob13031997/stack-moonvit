@@ -1,5 +1,5 @@
-import {store} from './store.js?v=21';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=21';
+import {store} from './store.js?v=22';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=22';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -8,6 +8,7 @@ let currentView='today',toastTimer;
 function render(view=currentView){currentView=view;app.innerHTML=views[view]();nav.classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(button=>button.classList.toggle('active',button.dataset.view===view));window.scrollTo(0,0)}
 function renderOnboarding(){app.innerHTML=onboardingView();nav.classList.add('hidden')}
 function toast(text){clearTimeout(toastTimer);toastEl.textContent=text;toastEl.classList.add('show');toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1700)}
+function completeOnboarding(){store.install(store.state.goal);store.state.activeStack=store.state.goal;store.state.onboarded=true;store.state.onboardingStep=0;store.save();render('stacks')}
 
 function updateCategoryAdvice(){const title=document.querySelector('#customTitle')?.value||'',selected=document.querySelector('#customStack')?.value,suggested=store.suggestCategory(title),advice=document.querySelector('[data-category-advice]');if(advice)advice.textContent=suggested&&suggested!==selected?(store.state.installed.includes(suggested)?`Похоже, это относится к ${suggested}. Категорию можно изменить.`:`Похоже, это относится к ${suggested}. Сначала добавь эту категорию.`):''}
 document.addEventListener('input',event=>{if(event.target.matches('[data-metric]'))document.querySelector(`[data-output="${event.target.dataset.metric}"]`).value=event.target.value;if(event.target.id==='customTitle')updateCategoryAdvice()});
@@ -19,8 +20,10 @@ document.addEventListener('click',event=>{
   const view=target.closest('[data-view]');if(view){render(view.dataset.view);return}
   const goal=target.closest('[data-goal]');if(goal){store.state.goal=goal.dataset.goal;store.save();renderOnboarding();return}
   if(target.closest('[data-next]')){store.state.onboardingStep=1;store.save();renderOnboarding();return}
-  const moon=target.closest('[data-moon]');if(moon){store.state.moonConnected=moon.dataset.moon==='yes';store.state.onboardingStep=2;store.save();renderOnboarding();return}
-  if(target.closest('[data-finish]')){store.install(store.state.goal);store.state.activeStack=store.state.goal;store.state.onboarded=true;store.state.onboardingStep=0;store.save();render('stacks');manageStackModal(store.state.goal);return}
+  if(target.closest('[data-goal-next]')){store.state.onboardingStep=2;store.save();renderOnboarding();return}
+  if(target.closest('[data-onboarding-custom]')){completeOnboarding();customActionModal(store.state.goal);return}
+  if(target.closest('[data-onboarding-templates]')){completeOnboarding();templatesModal(store.state.goal);return}
+  if(target.closest('[data-onboarding-empty]')){completeOnboarding();render('today');return}
   const task=target.closest('[data-task]');if(task){const action=store.actions().find(a=>a.id===task.dataset.task);if(action?.checkin){checkinModal();return}const done=store.toggle(task.dataset.task);render();toast(done?'Выполнено':'Отметка снята');return}
   const process=target.closest('[data-process]');if(process){processModal(process.dataset.process);return}
   const processStep=target.closest('[data-process-step]');if(processStep){const complete=store.toggleProcessStep(processStep.dataset.processId,processStep.dataset.processStep);processStep.closest('.modal-wrap').remove();processModal(processStep.dataset.processId);if(complete)toast('Процесс выполнен');return}
@@ -28,6 +31,7 @@ document.addEventListener('click',event=>{
   const insightStack=target.closest('[data-insight-stack]');if(insightStack){store.activate(insightStack.dataset.insightStack);render('insights');return}
   const save=target.closest('[data-save-checkin]');if(save){const values=Object.fromEntries([...document.querySelectorAll('[data-metric]')].map(input=>[input.dataset.metric,+input.value]));store.saveCheckin(save.dataset.saveCheckin,values);save.closest('.modal-wrap').remove();render();toast('Состояние сохранено');return}
   if(target.closest('[data-reset]')){store.resetToday();render();toast('Отметки текущего стека сброшены');return}
+  if(target.closest('[data-dismiss-today-hint]')){store.state.todayHintDismissed=true;store.save();render('today');return}
   const remove=target.closest('[data-remove]');if(remove){event.stopPropagation();modal(`<p class="eyebrow">Удаление</p><h2>Удалить ${remove.dataset.remove} STACK?</h2><p class="subtitle">Сохранённые отметки останутся в истории.</p><button class="danger" data-confirm-remove="${remove.dataset.remove}">Удалить стек</button>`);return}
   const confirmRemove=target.closest('[data-confirm-remove]');if(confirmRemove){store.remove(confirmRemove.dataset.confirmRemove);confirmRemove.closest('.modal-wrap').remove();render('stacks');toast('Стек удалён');return}
   const manage=target.closest('[data-manage]');if(manage){event.stopPropagation();manageStackModal(manage.dataset.manage);return}
@@ -61,4 +65,4 @@ document.addEventListener('click',event=>{
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelector('.modal-wrap')?.remove()});
 
 store.state.onboarded?render():renderOnboarding();
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=21').catch(()=>{}));
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=22').catch(()=>{}));
