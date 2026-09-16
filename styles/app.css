@@ -28,7 +28,13 @@ h3{font-size:15px;margin:0}
 .section button{border:0;background:none;color:var(--moss);font:600 12px Manrope}
 .section>small,.insight small{font-size:10px;color:var(--muted)}
 .tasks,.stack-grid{display:grid;gap:9px}
+.period-groups{display:grid;gap:20px}
+.period-group{display:grid;gap:9px}
+.period-head{display:flex;align-items:center;justify-content:space-between;padding:0 3px}
+.period-head h3{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.period-head small{font-size:9px;color:var(--muted)}
 .task{width:100%;min-height:60px;display:flex;align-items:center;gap:12px;padding:14px 15px;background:var(--card);border:1px solid var(--line);border-radius:15px;text-align:left;font-family:Manrope;color:var(--ink)}
+.task.next{border-color:var(--moss);box-shadow:0 5px 18px #37574414}
 .task>i{flex:0 0 24px;width:24px;height:24px;border:1px solid #a9afa7;border-radius:50%;display:grid;place-items:center;font-style:normal}
 .task>span{flex:1}
 .task b,.task small{display:block}
@@ -130,7 +136,8 @@ h3{font-size:15px;margin:0}
 .manage-row b{overflow:hidden;text-overflow:ellipsis;font-size:12px}
 .manage-row small{margin-top:4px;color:var(--muted);font-size:9px}
 .manage-row>div{display:flex;gap:3px}
-.manage-row button{width:31px;height:31px;border:0;border-radius:50%;background:var(--sage);color:var(--moss)}
+.manage-row button{width:29px;height:29px;border:0;border-radius:50%;background:var(--sage);color:var(--moss)}
+.manage-row button:disabled{opacity:.28}
 .empty-state{padding:18px;border:1px dashed var(--line);border-radius:13px;color:var(--muted);font-size:11px;text-align:center}
 .process-detail button{display:flex;align-items:center;gap:11px;width:100%;padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--card);color:var(--ink);font:12px Manrope;text-align:left}
 .process-detail button i{width:24px;height:24px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;font-style:normal;font-size:10px}

@@ -4,10 +4,10 @@ export const STACK_LIBRARY = {
     purpose: 'Спокойный вечер, честная оценка сна и устойчивое восстановление.',
     checkin: {id:'sleep-checkin', eyebrow:'Утренняя отметка', title:'Как прошло восстановление?', questions:[{key:'sleep',label:'Качество сна'},{key:'energy',label:'Энергия'}]},
     actions: [
-      {id:'sleep-moon', title:'Принять Moonvit Moon', meta:'Вечер · по своему режиму', product:true},
-      {id:'sleep-checkin', title:'Оценить сон и энергию', meta:'2 коротких вопроса', checkin:true},
-      {id:'sleep-screen', title:'Без экрана перед сном', meta:'30 минут · дисциплина'},
-      {id:'sleep-bed', title:'Лечь до выбранного времени', meta:'До 00:00 · режим'}
+      {id:'sleep-moon', title:'Принять Moonvit Moon', meta:'Вечер · по своему режиму', period:'evening', product:true},
+      {id:'sleep-checkin', title:'Оценить сон и энергию', meta:'2 коротких вопроса', period:'morning', checkin:true},
+      {id:'sleep-screen', title:'Без экрана перед сном', meta:'30 минут · дисциплина', period:'evening'},
+      {id:'sleep-bed', title:'Лечь до выбранного времени', meta:'До 00:00 · режим', period:'evening'}
     ]
   },
   FOCUS: {
@@ -15,10 +15,10 @@ export const STACK_LIBRARY = {
     purpose:'Защитить внимание и завершить одну важную работу без рассеивания.',
     checkin:{id:'focus-checkin',eyebrow:'Итог фокуса',title:'Как прошла глубокая работа?',questions:[{key:'focus',label:'Концентрация'},{key:'clarity',label:'Ясность ума'}]},
     actions:[
-      {id:'focus-priority',title:'Выбрать один главный результат',meta:'1 минута · направление'},
-      {id:'focus-session',title:'Фокус-сессия 45 минут',meta:'Без переключений'},
-      {id:'focus-phone',title:'Убрать телефон из зоны работы',meta:'На время сессии'},
-      {id:'focus-checkin',title:'Оценить концентрацию',meta:'2 коротких вопроса',checkin:true}
+      {id:'focus-priority',title:'Выбрать один главный результат',meta:'1 минута · направление',period:'morning'},
+      {id:'focus-session',title:'Фокус-сессия 45 минут',meta:'Без переключений',period:'day'},
+      {id:'focus-phone',title:'Убрать телефон из зоны работы',meta:'На время сессии',period:'day'},
+      {id:'focus-checkin',title:'Оценить концентрацию',meta:'2 коротких вопроса',period:'evening',checkin:true}
     ]
   },
   TRAIN: {
@@ -26,10 +26,10 @@ export const STACK_LIBRARY = {
     purpose:'Тренироваться регулярно, не игнорируя готовность тела и восстановление.',
     checkin:{id:'train-checkin',eyebrow:'После нагрузки',title:'Как отреагировало тело?',questions:[{key:'effort',label:'Качество тренировки'},{key:'recovery',label:'Восстановление'}]},
     actions:[
-      {id:'train-readiness',title:'Проверить готовность тела',meta:'Энергия · напряжение · боль'},
-      {id:'train-session',title:'Выполнить движение дня',meta:'Тренировка или активное восстановление'},
-      {id:'train-warmup',title:'Сделать разминку и заминку',meta:'Перед и после нагрузки'},
-      {id:'train-checkin',title:'Оценить нагрузку',meta:'2 коротких вопроса',checkin:true}
+      {id:'train-readiness',title:'Проверить готовность тела',meta:'Энергия · напряжение · боль',period:'morning'},
+      {id:'train-session',title:'Выполнить движение дня',meta:'Тренировка или активное восстановление',period:'day'},
+      {id:'train-warmup',title:'Сделать разминку и заминку',meta:'Перед и после нагрузки',period:'day'},
+      {id:'train-checkin',title:'Оценить нагрузку',meta:'2 коротких вопроса',period:'evening',checkin:true}
     ]
   },
   BALANCE: {
@@ -37,10 +37,10 @@ export const STACK_LIBRARY = {
     purpose:'Снизить перегрузку и вернуть управляемость состоянию короткими паузами.',
     checkin:{id:'balance-checkin',eyebrow:'Вечерняя отметка',title:'Как изменилось состояние?',questions:[{key:'calm',label:'Спокойствие'},{key:'mood',label:'Настроение'}]},
     actions:[
-      {id:'balance-pause',title:'Сделать паузу без экрана',meta:'10 минут · тишина'},
-      {id:'balance-walk',title:'Выйти на короткую прогулку',meta:'15–20 минут'},
-      {id:'balance-breathe',title:'Замедлить дыхание',meta:'3 минуты · без таймера'},
-      {id:'balance-checkin',title:'Оценить состояние',meta:'2 коротких вопроса',checkin:true}
+      {id:'balance-pause',title:'Сделать паузу без экрана',meta:'10 минут · тишина',period:'day'},
+      {id:'balance-walk',title:'Выйти на короткую прогулку',meta:'15–20 минут',period:'day'},
+      {id:'balance-breathe',title:'Замедлить дыхание',meta:'3 минуты · без таймера',period:'evening'},
+      {id:'balance-checkin',title:'Оценить состояние',meta:'2 коротких вопроса',period:'evening',checkin:true}
     ]
   }
 };
