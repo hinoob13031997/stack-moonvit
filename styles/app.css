@@ -42,7 +42,9 @@ h3{font-size:15px;margin:0}
 .period-group.current .period-head h3 i{background:var(--moss);box-shadow:0 0 0 4px #dce5d9}
 .period-group.current .period-head small{background:var(--sage);color:var(--moss)}
 .period-group.complete .period-head h3 i{background:var(--moss)}
-.period-group.upcoming{opacity:.78}
+.period-group.past{opacity:.62}
+.period-group.future{opacity:.78}
+.period-group.past .period-head small{background:transparent;border:1px solid var(--line)}
 .task{width:100%;min-height:64px;display:flex;align-items:center;gap:12px;padding:14px 15px;background:var(--card);border:1px solid var(--line);border-radius:15px;text-align:left;font-family:Manrope;color:var(--ink);transition:border-color .2s,box-shadow .2s,transform .15s,opacity .2s}
 .task:active{transform:scale(.985)}
 .task.next{min-height:74px;background:var(--moss);border-color:var(--moss);color:#fff;box-shadow:0 9px 24px #3757442b}
@@ -199,6 +201,12 @@ h3{font-size:15px;margin:0}
 .today-hint b{font-size:11px}
 .today-hint p{margin:3px 0 0;color:var(--muted);font-size:10px;line-height:1.45}
 .today-hint button{flex:0 0 auto;border:0;background:none;color:var(--moss);font:700 10px Manrope}
+.day-complete{display:flex;align-items:center;gap:12px;margin-top:18px;padding:15px;border:1px solid #cad7c7;border-radius:16px;background:var(--sage)}
+.day-complete>i{flex:0 0 30px;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:var(--moss);color:#fff;font-style:normal;font-size:12px}
+.day-complete>div{min-width:0;flex:1}
+.day-complete b{font-size:12px}
+.day-complete p{margin:3px 0 0;color:var(--muted);font-size:10px;line-height:1.45}
+.day-complete button{flex:0 0 auto;border:0;background:none;color:var(--moss);font:700 10px Manrope}
 .modal-section{margin-top:26px}
 .template-list{display:grid;gap:7px}
 .templates-modal{margin-top:20px}
