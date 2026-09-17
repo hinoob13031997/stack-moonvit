@@ -1,5 +1,5 @@
-const CACHE='stack-moonvit-shell-v24';
-const SHELL=['./','./index.html','./styles/app.css?v=24','./src/app.js?v=24','./src/data.js?v=24','./src/store.js?v=24','./src/ui.js?v=24','./manifest.webmanifest?v=24','./icon.svg'];
+const CACHE='stack-moonvit-shell-v25';
+const SHELL=['./','./index.html','./styles/app.css?v=25','./src/app.js?v=25','./src/data.js?v=25','./src/store.js?v=25','./src/ui.js?v=25','./manifest.webmanifest?v=25','./icon.svg'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));
