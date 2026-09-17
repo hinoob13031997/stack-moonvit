@@ -1,5 +1,5 @@
-import {store} from './store.js?v=28';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=28';
+import {store} from './store.js?v=29';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=29';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast'),updateBanner=document.querySelector('#updateBanner');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -20,8 +20,9 @@ document.addEventListener('click',event=>{
   if(target.matches('.modal-wrap')){target.remove();return}
   const view=target.closest('[data-view]');if(view){render(view.dataset.view);return}
   const goal=target.closest('[data-goal]');if(goal){store.state.goal=goal.dataset.goal;store.save();renderOnboarding();return}
-  if(target.closest('[data-next]')){store.state.onboardingStep=1;store.save();renderOnboarding();return}
-  if(target.closest('[data-goal-next]')){store.state.onboardingStep=2;store.save();renderOnboarding();return}
+  if(target.closest('[data-owner-next]')){store.setOwnerName(document.querySelector('#ownerName')?.value);store.state.onboardingStep=1;store.save();renderOnboarding();return}
+  if(target.closest('[data-next]')){store.state.onboardingStep=2;store.save();renderOnboarding();return}
+  if(target.closest('[data-goal-next]')){store.state.onboardingStep=3;store.save();renderOnboarding();return}
   if(target.closest('[data-onboarding-custom]')){completeOnboarding();customActionModal(store.state.goal);return}
   if(target.closest('[data-onboarding-templates]')){completeOnboarding();templatesModal(store.state.goal);return}
   if(target.closest('[data-onboarding-empty]')){completeOnboarding();render('today');return}
@@ -61,6 +62,8 @@ document.addEventListener('click',event=>{
   if(target.closest('[data-finish-experiment]')){experimentResultModal();return}
   const experimentOutcome=target.closest('[data-experiment-outcome]');if(experimentOutcome){store.finishExperiment(store.state.activeStack,experimentOutcome.dataset.experimentOutcome);experimentOutcome.closest('.modal-wrap').remove();render('insights');toast('Результат эксперимента сохранён');return}
   if(target.closest('[data-toggle-moon]')){store.state.moonConnected=!store.state.moonConnected;store.save();render('profile');toast(store.state.moonConnected?'Moonvit подключён':'Moonvit отключён');return}
+  if(target.closest('[data-edit-owner]')){modal(`<p class="eyebrow">Персонализация</p><h2>Как к тебе обращаться?</h2><p class="subtitle">Имя используется только внутри STACK и хранится на этом устройстве.</p><label class="field modal-owner-field">Имя<input id="profileOwnerName" maxlength="40" autocomplete="name" value="${String(store.state.ownerName||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}" placeholder="Можно оставить пустым"></label><button class="primary" data-save-owner>Сохранить</button>`);return}
+  if(target.closest('[data-save-owner]')){store.setOwnerName(document.querySelector('#profileOwnerName')?.value);target.closest('.modal-wrap').remove();render('profile');toast('Имя сохранено');return}
   if(target.closest('[data-check-update]')){if(!swRegistration){toast('Обновление недоступно');return}swRegistration.update().then(()=>toast('Проверка обновлений завершена')).catch(()=>toast('Не удалось проверить обновление'));return}
   if(target.closest('[data-export]')){const blob=new Blob([JSON.stringify(store.backup(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`stack-moonvit-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),500);toast('Резервная копия создана');return}
   if(target.closest('[data-import]')){modal('<p class="eyebrow">Восстановление</p><h2>Выбери резервную копию</h2><p class="subtitle">Текущие данные на этом устройстве будут заменены содержимым файла.</p><label class="file-picker">Выбрать файл<input data-backup-file type="file" accept="application/json,.json"></label>');return}
@@ -72,4 +75,4 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')document.que
 store.state.onboarded?render():renderOnboarding();
 window.addEventListener('online',()=>{if(currentView==='profile')render('profile');toast('Соединение восстановлено')});
 window.addEventListener('offline',()=>{if(currentView==='profile')render('profile');toast('Офлайн-режим: данные сохраняются')});
-if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=28').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
+if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=29').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}

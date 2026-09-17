@@ -1,4 +1,4 @@
-import {STACK_LIBRARY,TODAY} from './data.js?v=28';
+import {STACK_LIBRARY,TODAY} from './data.js?v=29';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
@@ -13,18 +13,20 @@ function normalizeRecord(record={}){
 
 function migrate(){
   const current=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(current)current.ownerName=String(current.ownerName||'').trim().slice(0,40);
   if(current){current.records=Object.fromEntries(Object.entries(current.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=current.experiments||{};current.experimentHistory=current.experimentHistory||{};current.weeklyReviews=Array.isArray(current.weeklyReviews)?current.weeklyReviews:[];current.customActions=current.customActions||[];current.todayHintDismissed=Boolean(current.todayHintDismissed);current.customActions.forEach((action,index)=>{action.period=['morning','day','evening'].includes(action.period)?action.period:'day';action.days=Array.isArray(action.days)?action.days:[];action.steps=Array.isArray(action.steps)?action.steps:[];action.pauses=Array.isArray(action.pauses)?action.pauses:[];action.order=Number.isFinite(action.order)?action.order:index;action.revisions=Array.isArray(action.revisions)?action.revisions:[]});current.templateActions=current.templateActions||[];current.templateHistory=current.templateHistory||{};current.templateActions.forEach(id=>{if(!(current.templateHistory[id]||[]).some(period=>!period.to))(current.templateHistory[id]=current.templateHistory[id]||[]).push({from:TODAY(),to:null})});return current}
   const old=JSON.parse(localStorage.getItem('stack-moonvit-v2')||localStorage.getItem('stack-moonvit-v1')||'{}');
   const installed=['SLEEP',...(old.stacks||[]).map(s=>s.code)].filter((x,i,a)=>a.indexOf(x)===i&&STACK_LIBRARY[x]);
   const records=Object.fromEntries(Object.entries(old.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));
   if(!records[TODAY()])records[TODAY()]=normalizeRecord({done:old.done||[],sleep:null,energy:null});
-  return {onboarded:Boolean(old.onboarded),goal:old.goal||'SLEEP',moonConnected:Boolean(old.moonConnected),activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},weeklyReviews:[],customActions:[],templateActions:[],templateHistory:{},todayHintDismissed:false,onboardingStep:0};
+  return {onboarded:Boolean(old.onboarded),ownerName:String(old.ownerName||old.name||'').trim().slice(0,40),goal:old.goal||'SLEEP',moonConnected:Boolean(old.moonConnected),activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},weeklyReviews:[],customActions:[],templateActions:[],templateHistory:{},todayHintDismissed:false,onboardingStep:0};
 }
 
 class StackStore{
   constructor(){this.state=migrate();this.ensureToday();this.save()}
   ensureToday(){if(!this.state.records[TODAY()])this.state.records[TODAY()]=emptyRecord()}
   save(){localStorage.setItem(KEY,JSON.stringify(this.state))}
+  setOwnerName(value){this.state.ownerName=String(value||'').trim().replace(/\s+/g,' ').slice(0,40);this.save();return this.state.ownerName}
   record(date=TODAY()){return this.state.records[date]||null}
   stack(code=this.state.activeStack){return STACK_LIBRARY[code]||STACK_LIBRARY.SLEEP}
   actions(code=this.state.activeStack,date=TODAY()){const record=this.record(date),historical=date!==TODAY(),base=this.stack(code).actions.filter(action=>!action.checkin&&(this.templateScheduled(action.id,date)||historical&&record?.done.includes(action.id))&&(this.state.moonConnected||!action.product));const custom=this.state.customActions.map(action=>this.actionAt(action,date)).filter(action=>action&&action.stackCode===code&&this.isScheduled(action,date)).sort((a,b)=>(a.order??0)-(b.order??0));return [...base,...custom]}
@@ -143,7 +145,7 @@ class StackStore{
     const incoming=payload?.format==='STACK_MOONVIT_BACKUP'?payload.state:payload?.state;
     if(!incoming||typeof incoming!=='object'||!incoming.records||!Array.isArray(incoming.installed))return false;
     const installed=incoming.installed.filter(code=>STACK_LIBRARY[code]);if(!installed.includes('SLEEP'))installed.unshift('SLEEP');
-    this.state={...this.state,...incoming,installed,activeStack:installed.includes(incoming.activeStack)?incoming.activeStack:'SLEEP',records:Object.fromEntries(Object.entries(incoming.records).map(([date,record])=>[date,normalizeRecord(record)])),experiments:incoming.experiments||{},experimentHistory:incoming.experimentHistory||{},weeklyReviews:Array.isArray(incoming.weeklyReviews)?incoming.weeklyReviews:[],customActions:incoming.customActions||[],templateActions:incoming.templateActions||[],templateHistory:incoming.templateHistory||{}};
+    this.state={...this.state,...incoming,ownerName:String(incoming.ownerName||'').trim().replace(/\s+/g,' ').slice(0,40),installed,activeStack:installed.includes(incoming.activeStack)?incoming.activeStack:'SLEEP',records:Object.fromEntries(Object.entries(incoming.records).map(([date,record])=>[date,normalizeRecord(record)])),experiments:incoming.experiments||{},experimentHistory:incoming.experimentHistory||{},weeklyReviews:Array.isArray(incoming.weeklyReviews)?incoming.weeklyReviews:[],customActions:incoming.customActions||[],templateActions:incoming.templateActions||[],templateHistory:incoming.templateHistory||{}};
     this.ensureToday();this.save();return true;
   }
 }
