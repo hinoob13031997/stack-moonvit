@@ -1,5 +1,5 @@
-import {store} from './store.js?v=26';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=26';
+import {store} from './store.js?v=27';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=27';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -54,6 +54,7 @@ document.addEventListener('click',event=>{
   const date=target.closest('[data-date]');if(date){dayModal(date.dataset.date);return}
   if(target.closest('[data-weekly-review]')){weeklyReviewModal();return}
   if(target.closest('[data-save-weekly]')){store.saveWeeklyReview();target.closest('.modal-wrap').remove();render('insights');toast('Итог недели сохранён');return}
+  const weeklyDecision=target.closest('[data-weekly-decision]');if(weeklyDecision){const decision=store.saveWeeklyDecision(store.state.activeStack,weeklyDecision.dataset.weeklyDecision);weeklyDecision.closest('.modal-wrap').remove();render('insights');toast(decision?'Решение на неделю сохранено':'Нужно больше данных');return}
   if(target.closest('[data-weekly-experiment]')){store.startExperiment();target.closest('.modal-wrap').remove();render('insights');toast('Одно улучшение выбрано');return}
   const startExperiment=target.closest('[data-start-experiment]');if(startExperiment){store.startExperiment(store.state.activeStack,startExperiment.dataset.experimentAction||null);render('insights');toast('Эксперимент начат на 3 дня');return}
   if(target.closest('[data-finish-experiment]')){experimentResultModal();return}
@@ -67,4 +68,4 @@ document.addEventListener('click',event=>{
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelector('.modal-wrap')?.remove()});
 
 store.state.onboarded?render():renderOnboarding();
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=26').catch(()=>{}));
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=27').catch(()=>{}));
