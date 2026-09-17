@@ -207,6 +207,14 @@ h3{font-size:15px;margin:0}
 .day-complete b{font-size:12px}
 .day-complete p{margin:3px 0 0;color:var(--muted);font-size:10px;line-height:1.45}
 .day-complete button{flex:0 0 auto;border:0;background:none;color:var(--moss);font:700 10px Manrope}
+.state-checkin{display:flex;align-items:center;gap:14px;margin-top:18px;padding:16px;border:1px solid #cad7c7;border-radius:17px;background:var(--sage)}
+.state-checkin>div{min-width:0;flex:1}
+.state-checkin .eyebrow{margin-bottom:5px;color:var(--moss);font-size:9px}
+.state-checkin h2{font-size:16px}
+.state-checkin p:last-child{margin:5px 0 0;color:var(--muted);font-size:10px;line-height:1.45}
+.state-checkin>button{flex:0 0 auto;border:0;border-radius:99px;background:var(--moss);color:#fff;padding:9px 11px;font:700 10px Manrope}
+.state-checkin.saved{background:var(--card);border-color:var(--line)}
+.state-checkin.saved>button{background:transparent;color:var(--moss);padding-left:5px;padding-right:5px}
 .modal-section{margin-top:26px}
 .template-list{display:grid;gap:7px}
 .templates-modal{margin-top:20px}
