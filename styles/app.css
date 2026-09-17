@@ -316,3 +316,11 @@ h3{font-size:15px;margin:0}
 @keyframes veil-in{from{opacity:0}to{opacity:1}}
 @keyframes sheet-in{from{transform:translateY(18px)}to{transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Long user text must wrap without pushing mobile controls off screen. */
+.settings>button>span:first-child{flex:1;min-width:0}
+.setting-value{max-width:55%;overflow-wrap:anywhere}
+.modal h2{padding-right:38px;overflow-wrap:anywhere}
+.day-detail span,.manage-row b,.onboarding .subtitle{overflow-wrap:anywhere}
+.history>button>span,.history-empty>span{min-width:0;overflow-wrap:anywhere}
+.field input,.field textarea{min-width:0;scroll-margin:24px}

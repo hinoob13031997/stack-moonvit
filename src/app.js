@@ -1,5 +1,5 @@
-import {store} from './store.js?v=29';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=29';
+import {store} from './store.js?v=30';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=30';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast'),updateBanner=document.querySelector('#updateBanner');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -75,4 +75,4 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')document.que
 store.state.onboarded?render():renderOnboarding();
 window.addEventListener('online',()=>{if(currentView==='profile')render('profile');toast('Соединение восстановлено')});
 window.addEventListener('offline',()=>{if(currentView==='profile')render('profile');toast('Офлайн-режим: данные сохраняются')});
-if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=29').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
+if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=30').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
