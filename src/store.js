@@ -1,4 +1,4 @@
-import {STACK_LIBRARY,TODAY} from './data.js?v=27';
+import {STACK_LIBRARY,TODAY} from './data.js?v=28';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
@@ -138,7 +138,7 @@ class StackStore{
     const available=dates.filter(date=>date<=today),done=available.filter(date=>this.record(date)?.done.includes(action.id)).length;
     return {...saved,action,dates,elapsed:available.length,done,complete:today>=dates[2]};
   }
-  backup(){return {format:'STACK_MOONVIT_BACKUP',version:1,exportedAt:new Date().toISOString(),state:this.state}}
+  backup(){return {format:'STACK_MOONVIT_BACKUP',version:2,exportedAt:new Date().toISOString(),state:JSON.parse(JSON.stringify(this.state))}}
   restore(payload){
     const incoming=payload?.format==='STACK_MOONVIT_BACKUP'?payload.state:payload?.state;
     if(!incoming||typeof incoming!=='object'||!incoming.records||!Array.isArray(incoming.installed))return false;

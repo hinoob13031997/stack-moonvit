@@ -11,7 +11,8 @@ main{padding:0 20px 28px}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 0 24px}
 .brand{font-size:14px;font-weight:700;letter-spacing:.14em}
 .brand span{font-size:11px;color:var(--muted);letter-spacing:.05em}
-.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff;font-size:12px}
+.avatar{width:40px;height:40px;border:0;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff}
+.avatar .icon{width:18px;height:18px}
 .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--muted);margin:0 0 8px}
 h1{font-size:31px;line-height:1.08;letter-spacing:-.04em;margin:0 0 9px;font-weight:600}
 h2{font-size:20px;letter-spacing:-.025em;margin:0}
@@ -106,10 +107,14 @@ h3{font-size:15px;margin:0}
 .history-more[open]>summary{margin-bottom:8px;color:var(--muted)}
 .profile{margin-top:24px}
 .profile>p:last-child{font-size:12px;color:var(--muted)}
+.profile-note{margin:18px 2px 0;color:var(--muted);font-size:10px;line-height:1.55}
 .settings{display:grid;margin-top:20px}
 .settings>div,.settings>button{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 0;border:0;border-bottom:1px solid var(--line);background:none;font:13px Manrope;color:var(--ink);text-align:left}
 .setting-value{min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:5px;color:var(--muted);text-align:right}
 .setting-value .icon{flex:0 0 auto;width:16px;height:16px}
+.setting-value.connection{font-size:10px;line-height:1.35}
+.connection>i{flex:0 0 7px;width:7px;height:7px;border-radius:50%;background:#a6aaa4}
+.connection>i.online{background:#4d795b;box-shadow:0 0 0 4px #dce5d9}
 .bottom-nav{position:fixed;z-index:10;bottom:0;width:min(100%,430px);display:flex;background:#f8f7f2eb;backdrop-filter:blur(18px);border-top:1px solid var(--line);padding:9px 10px calc(9px + env(safe-area-inset-bottom))}
 .nav-item{min-height:48px;flex:1;border:0;background:none;color:#929790;display:grid;gap:2px;place-items:center;font-family:Manrope}
 .nav-item .icon{width:21px;height:21px;stroke-width:1.65}
@@ -155,6 +160,10 @@ h3{font-size:15px;margin:0}
 .day-detail{display:grid;gap:8px;margin:20px 0}
 .toast{position:fixed;z-index:40;left:50%;bottom:100px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:11px 15px;border-radius:99px;font-size:11px;opacity:0;transition:.25s;white-space:nowrap}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+.update-banner{position:fixed;z-index:45;left:50%;bottom:calc(82px + env(safe-area-inset-bottom));width:min(calc(100% - 28px),402px);transform:translateX(-50%);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:15px;background:var(--ink);color:#fff;box-shadow:0 12px 30px #17201935}
+.update-banner span{font-size:11px;font-weight:600}
+.update-banner button{min-height:36px;border:0;border-radius:99px;background:#ffffff18;color:#fff;padding:0 12px;font:700 10px Manrope}
+.update-banner.hidden{display:none}
 @media(min-width:700px){.app-shell{margin:24px auto;min-height:860px;border-radius:28px;overflow:hidden}
 .bottom-nav{border-radius:0 0 28px 28px}
 }
