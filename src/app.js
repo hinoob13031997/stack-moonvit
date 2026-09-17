@@ -1,5 +1,5 @@
-import {store} from './store.js?v=23';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=23';
+import {store} from './store.js?v=24';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=24';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -29,6 +29,7 @@ document.addEventListener('click',event=>{
   const processStep=target.closest('[data-process-step]');if(processStep){const complete=store.toggleProcessStep(processStep.dataset.processId,processStep.dataset.processStep);processStep.closest('.modal-wrap').remove();processModal(processStep.dataset.processId);if(complete)toast('Процесс выполнен');return}
   const quickStack=target.closest('[data-quick-stack]');if(quickStack){store.activate(quickStack.dataset.quickStack);render('today');return}
   const insightStack=target.closest('[data-insight-stack]');if(insightStack){store.activate(insightStack.dataset.insightStack);render('insights');return}
+  const openCheckin=target.closest('[data-open-checkin]');if(openCheckin){checkinModal(openCheckin.dataset.openCheckin);return}
   const save=target.closest('[data-save-checkin]');if(save){const values=Object.fromEntries([...document.querySelectorAll('[data-metric]')].map(input=>[input.dataset.metric,+input.value]));store.saveCheckin(save.dataset.saveCheckin,values);save.closest('.modal-wrap').remove();render();toast('Состояние сохранено');return}
   if(target.closest('[data-reset]')){store.resetToday();render();toast('Отметки текущего стека сброшены');return}
   if(target.closest('[data-dismiss-today-hint]')){store.state.todayHintDismissed=true;store.save();render('today');return}
@@ -65,4 +66,4 @@ document.addEventListener('click',event=>{
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelector('.modal-wrap')?.remove()});
 
 store.state.onboarded?render():renderOnboarding();
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=23').catch(()=>{}));
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=24').catch(()=>{}));
