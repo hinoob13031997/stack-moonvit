@@ -1,4 +1,4 @@
-import {STACK_LIBRARY,TODAY} from './data.js?v=24';
+import {STACK_LIBRARY,TODAY} from './data.js?v=25';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
@@ -105,6 +105,13 @@ class StackStore{
     const measured=eligible.map(pair=>({...pair,correlation:this.correlation(pair.points)})).sort((a,b)=>Math.abs(b.correlation)-Math.abs(a.correlation));
     return {ready:true,...measured[0],overlap:measured[0].points.length};
   }
+  stateTrend(code=this.state.activeStack){return this.lastDays().reverse().map(date=>{const values=this.checkin(code,date);return {date,value:values?this.metricAverage(values):null}})}
+  actionStateInsight(code=this.state.activeStack){
+    const dates=this.lastDays(14).reverse(),candidates=this.actions(code).filter(action=>!action.product),measured=candidates.map(action=>{const points=dates.map(date=>{const state=this.checkin(code,date);if(!state||!this.actions(code,date).some(item=>item.id===action.id))return null;return {done:Boolean(this.record(date)?.done.includes(action.id)),value:this.metricAverage(state)}}).filter(Boolean),withAction=points.filter(point=>point.done),withoutAction=points.filter(point=>!point.done),average=items=>items.length?items.reduce((sum,item)=>sum+item.value,0)/items.length:null;return {action,points:points.length,withCount:withAction.length,withoutCount:withoutAction.length,withAverage:average(withAction),withoutAverage:average(withoutAction)}}).sort((a,b)=>{const delta=item=>item.withAverage!=null&&item.withoutAverage!=null?Math.abs(item.withAverage-item.withoutAverage):-1;return delta(b)-delta(a)}),best=measured[0]||null;
+    if(!best)return {ready:false,reason:'actions',points:0,needed:5};
+    if(best.points<5||best.withCount<2||best.withoutCount<2)return {ready:false,reason:'data',...best,needed:Math.max(0,5-best.points)};
+    return {ready:true,...best,delta:best.withAverage-best.withoutAverage};
+  }
   metricAverage(values){const numbers=Object.values(values).map(Number).filter(Number.isFinite);return numbers.length?numbers.reduce((sum,value)=>sum+value,0)/numbers.length:0}
   correlation(points){
     const count=points.length,avgX=points.reduce((sum,p)=>sum+p[0],0)/count,avgY=points.reduce((sum,p)=>sum+p[1],0)/count;
@@ -117,12 +124,13 @@ class StackStore{
     const measured=candidates.map(action=>({...action,count:days.filter(date=>this.record(date)?.done.includes(action.id)).length}));
     return measured.some(action=>action.count>0)?measured.sort((a,b)=>a.count-b.count)[0]:null;
   }
-  startExperiment(code=this.state.activeStack){const action=this.weakestAction(code);if(!action)return false;this.state.experiments[code]={actionId:action.id,startedAt:TODAY()};this.save();return true}
-  finishExperiment(code=this.state.activeStack){const result=this.experiment(code);if(!result)return false;const history=this.state.experimentHistory[code]||[];this.state.experimentHistory[code]=[{actionId:result.actionId,title:result.action.title,startedAt:result.startedAt,finishedAt:TODAY(),done:result.done,days:result.elapsed,success:result.done>=2},...history].slice(0,5);delete this.state.experiments[code];this.save();return true}
+  suggestedAction(code=this.state.activeStack){const insight=this.actionStateInsight(code);return insight.ready&&insight.delta>.25?insight.action:this.weakestAction(code)}
+  startExperiment(code=this.state.activeStack,actionId=null){const action=actionId?this.actions(code).find(item=>item.id===actionId):this.suggestedAction(code);if(!action)return false;this.state.experiments[code]={actionId:action.id,startedAt:TODAY()};this.save();return true}
+  finishExperiment(code=this.state.activeStack,outcome){const result=this.experiment(code);if(!result||!['better','same','worse'].includes(outcome))return false;const history=this.state.experimentHistory[code]||[];this.state.experimentHistory[code]=[{actionId:result.actionId,title:result.action.title,startedAt:result.startedAt,finishedAt:TODAY(),done:result.done,days:result.elapsed,outcome,success:outcome==='better'},...history].slice(0,5);delete this.state.experiments[code];this.save();return true}
   lastExperiment(code=this.state.activeStack){return this.state.experimentHistory[code]?.[0]||null}
   experiment(code=this.state.activeStack){
     const saved=this.state.experiments[code];if(!saved)return null;
-    const action=this.actions(code).find(item=>item.id===saved.actionId);if(!action){delete this.state.experiments[code];this.save();return null}
+    const action=this.actions(code).find(item=>item.id===saved.actionId)||this.state.customActions.find(item=>item.id===saved.actionId&&!item.deletedAt)||this.stack(code).actions.find(item=>item.id===saved.actionId);if(!action){delete this.state.experiments[code];this.save();return null}
     const start=new Date(`${saved.startedAt}T12:00:00`),today=TODAY(),dates=Array.from({length:3},(_,index)=>{const date=new Date(start);date.setDate(date.getDate()+index);return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`});
     const available=dates.filter(date=>date<=today),done=available.filter(date=>this.record(date)?.done.includes(action.id)).length;
     return {...saved,action,dates,elapsed:available.length,done,complete:today>=dates[2]};
