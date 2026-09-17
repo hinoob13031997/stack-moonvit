@@ -1,4 +1,4 @@
-import {STACK_LIBRARY,TODAY} from './data.js?v=23';
+import {STACK_LIBRARY,TODAY} from './data.js?v=24';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
@@ -27,10 +27,10 @@ class StackStore{
   save(){localStorage.setItem(KEY,JSON.stringify(this.state))}
   record(date=TODAY()){return this.state.records[date]||null}
   stack(code=this.state.activeStack){return STACK_LIBRARY[code]||STACK_LIBRARY.SLEEP}
-  actions(code=this.state.activeStack,date=TODAY()){const record=this.record(date),historical=date!==TODAY(),base=this.stack(code).actions.filter(action=>(this.templateScheduled(action.id,date)||historical&&(record?.done.includes(action.id)||action.checkin&&record?.checkins?.[code]))&&(this.state.moonConnected||!action.product));const custom=this.state.customActions.map(action=>this.actionAt(action,date)).filter(action=>action&&action.stackCode===code&&this.isScheduled(action,date)).sort((a,b)=>(a.order??0)-(b.order??0));return [...base,...custom]}
+  actions(code=this.state.activeStack,date=TODAY()){const record=this.record(date),historical=date!==TODAY(),base=this.stack(code).actions.filter(action=>!action.checkin&&(this.templateScheduled(action.id,date)||historical&&record?.done.includes(action.id))&&(this.state.moonConnected||!action.product));const custom=this.state.customActions.map(action=>this.actionAt(action,date)).filter(action=>action&&action.stackCode===code&&this.isScheduled(action,date)).sort((a,b)=>(a.order??0)-(b.order??0));return [...base,...custom]}
   customActions(code=this.state.activeStack){return this.state.customActions.filter(action=>action.stackCode===code&&!action.deletedAt).sort((a,b)=>(a.order??0)-(b.order??0))}
   actionAt(action,date=TODAY()){if(date===TODAY())return action;const revision=(action.revisions||[]).find(item=>date>=item.from&&date<=item.to);return revision?{...action,...revision.snapshot,revisions:action.revisions}:action}
-  templates(code=this.state.activeStack){return this.stack(code).actions.filter(action=>this.state.moonConnected||!action.product)}
+  templates(code=this.state.activeStack){return this.stack(code).actions.filter(action=>!action.checkin&&(this.state.moonConnected||!action.product))}
   templateScheduled(id,date=TODAY()){if(date===TODAY())return this.state.templateActions.includes(id);return (this.state.templateHistory[id]||[]).some(period=>date>=period.from&&(!period.to||date<=period.to))}
   toggleTemplate(id){const action=Object.values(STACK_LIBRARY).flatMap(stack=>stack.actions).find(item=>item.id===id);if(!action)return false;const history=this.state.templateHistory[id]||[];if(this.state.templateActions.includes(id)){this.state.templateActions=this.state.templateActions.filter(item=>item!==id);const open=history.find(period=>!period.to);if(open){if(open.from===TODAY())history.splice(history.indexOf(open),1);else open.to=shiftDay(TODAY(),-1)}}else{this.state.templateActions.push(id);history.push({from:TODAY(),to:null})}this.state.templateHistory[id]=history;this.save();return this.state.templateActions.includes(id)}
   isScheduled(action,date=TODAY()){
@@ -44,7 +44,7 @@ class StackStore{
   }
   checkin(code=this.state.activeStack,date=TODAY()){return this.record(date)?.checkins?.[code]||null}
   toggle(actionId){const r=this.record();r.done=r.done.includes(actionId)?r.done.filter(x=>x!==actionId):[...r.done,actionId];this.save();return r.done.includes(actionId)}
-  saveCheckin(code,values){const r=this.record();r.checkins[code]=values;const id=this.stack(code).checkin.id;if(!r.done.includes(id))r.done.push(id);this.save()}
+  saveCheckin(code,values){const r=this.record();r.checkins[code]=values;this.save()}
   resetToday(code=this.state.activeStack){
     const record=this.record(),ids=new Set(this.actions(code).map(action=>action.id));
     record.done=record.done.filter(id=>!ids.has(id));
