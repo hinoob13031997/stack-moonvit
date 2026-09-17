@@ -1,5 +1,5 @@
-import {store} from './store.js?v=24';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=24';
+import {store} from './store.js?v=25';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=25';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -55,8 +55,9 @@ document.addEventListener('click',event=>{
   if(target.closest('[data-weekly-review]')){weeklyReviewModal();return}
   if(target.closest('[data-save-weekly]')){store.saveWeeklyReview();target.closest('.modal-wrap').remove();render('insights');toast('Итог недели сохранён');return}
   if(target.closest('[data-weekly-experiment]')){store.startExperiment();target.closest('.modal-wrap').remove();render('insights');toast('Одно улучшение выбрано');return}
-  if(target.closest('[data-start-experiment]')){store.startExperiment();render('insights');toast('Эксперимент начат на 3 дня');return}
-  if(target.closest('[data-finish-experiment]')){store.finishExperiment();render('insights');toast('Эксперимент завершён');return}
+  const startExperiment=target.closest('[data-start-experiment]');if(startExperiment){store.startExperiment(store.state.activeStack,startExperiment.dataset.experimentAction||null);render('insights');toast('Эксперимент начат на 3 дня');return}
+  if(target.closest('[data-finish-experiment]')){experimentResultModal();return}
+  const experimentOutcome=target.closest('[data-experiment-outcome]');if(experimentOutcome){store.finishExperiment(store.state.activeStack,experimentOutcome.dataset.experimentOutcome);experimentOutcome.closest('.modal-wrap').remove();render('insights');toast('Результат эксперимента сохранён');return}
   if(target.closest('[data-toggle-moon]')){store.state.moonConnected=!store.state.moonConnected;store.save();render('profile');toast(store.state.moonConnected?'Moonvit подключён':'Moonvit отключён');return}
   if(target.closest('[data-export]')){const blob=new Blob([JSON.stringify(store.backup(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`stack-moonvit-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),500);toast('Резервная копия создана');return}
   if(target.closest('[data-import]')){modal('<p class="eyebrow">Восстановление</p><h2>Выбери резервную копию</h2><p class="subtitle">Текущие данные на этом устройстве будут заменены содержимым файла.</p><label class="file-picker">Выбрать файл<input data-backup-file type="file" accept="application/json,.json"></label>');return}
@@ -66,4 +67,4 @@ document.addEventListener('click',event=>{
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelector('.modal-wrap')?.remove()});
 
 store.state.onboarded?render():renderOnboarding();
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=24').catch(()=>{}));
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=25').catch(()=>{}));
