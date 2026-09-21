@@ -68,6 +68,43 @@ test('история использует прошлую категорию, н�
   assert.equal(store.actions('FOCUS','2026-09-20').length,0);
 });
 
+test('редактирование после отметки не переносит историю текущего дня',async()=>{
+  const action={id:'same-day',stackCode:'SLEEP',kind:'habit',title:'Старое название',schedule:'daily',days:[],period:'evening',steps:[],order:0,revisions:[],createdAt:'2026-09-20',pausedAt:null,pauses:[],deletedAt:null,custom:true};
+  const store=await loadStore(baseState({installed:['SLEEP','FOCUS'],customActions:[action],records:{'2026-09-21':{done:['same-day'],checkins:{},processSteps:{}}}}));
+  assert.equal(store.updateCustomAction('same-day',{stackCode:'FOCUS',title:'Новое название',schedule:'weekdays',period:'morning',days:[],steps:[]}),true);
+  assert.equal(store.actions('FOCUS','2026-09-21').find(item=>item.id==='same-day').title,'Новое название');
+  const historical=store.actions('SLEEP','2026-09-21',{includeRecorded:true}).find(item=>item.id==='same-day');
+  assert.equal(historical.title,'Старое название');
+  assert.equal(historical.schedule,'daily');
+  assert.equal(store.actions('FOCUS','2026-09-21',{includeRecorded:true}).some(item=>item.id==='same-day'),false);
+  now='2026-09-22T12:00:00Z';
+  store.syncDay();
+  assert.equal(store.actions('SLEEP','2026-09-21')[0].title,'Старое название');
+  assert.equal(store.completed('SLEEP','2026-09-21'),1);
+});
+
+test('повторное редактирование не перезаписывает снимок отмеченного дня',async()=>{
+  const action={id:'twice',stackCode:'SLEEP',kind:'habit',title:'Первая версия',schedule:'daily',days:[],period:'evening',steps:[],order:0,revisions:[],createdAt:'2026-09-20',pausedAt:null,pauses:[],deletedAt:null,custom:true};
+  const store=await loadStore(baseState({installed:['SLEEP','FOCUS'],customActions:[action],records:{'2026-09-21':{done:['twice'],checkins:{},processSteps:{}}}}));
+  store.updateCustomAction('twice',{stackCode:'FOCUS',title:'Вторая версия',schedule:'daily',period:'day',days:[],steps:[]});
+  store.updateCustomAction('twice',{stackCode:'FOCUS',title:'Третья версия',schedule:'weekdays',period:'morning',days:[],steps:[]});
+  const historical=store.actions('SLEEP','2026-09-21',{includeRecorded:true})[0];
+  assert.equal(historical.title,'Первая версия');
+  assert.equal(store.state.customActions[0].revisions.filter(item=>item.from==='2026-09-21').length,1);
+});
+
+test('пауза, удаление и повторная установка стека не удаляют отметки',async()=>{
+  const action={id:'durable',stackCode:'FOCUS',kind:'habit',title:'Фокус',schedule:'daily',days:[],period:'day',steps:[],order:0,revisions:[],createdAt:'2026-09-20',pausedAt:null,pauses:[],deletedAt:null,custom:true};
+  const store=await loadStore(baseState({activeStack:'FOCUS',installed:['SLEEP','FOCUS'],customActions:[action],records:{'2026-09-21':{done:['durable'],checkins:{FOCUS:{focus:4,clarity:3}},processSteps:{}}}}));
+  store.toggleCustomAction('durable');
+  store.deleteCustomAction('durable');
+  store.remove('FOCUS');
+  assert.equal(store.record('2026-09-21').done.includes('durable'),true);
+  assert.deepEqual(store.checkin('FOCUS','2026-09-21'),{focus:4,clarity:3});
+  assert.equal(store.install('FOCUS'),true);
+  assert.equal(store.actions('FOCUS','2026-09-21',{includeRecorded:true}).some(item=>item.id==='durable'),true);
+});
+
 test('восстановление старой копии нормализует неполные действия',async()=>{
   const store=await loadStore(baseState({}));
   const restored=store.restore({format:'STACK_MOONVIT_BACKUP',state:baseState({customActions:[{id:'legacy',stackCode:'SLEEP',kind:'process',title:'Старый процесс',schedule:'daily',steps:['Первый шаг'],createdAt:'2026-09-20',custom:true}]})});

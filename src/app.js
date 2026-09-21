@@ -1,5 +1,5 @@
-import {store} from './store.js?v=31';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=31';
+import {store} from './store.js?v=32';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=32';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast'),updateBanner=document.querySelector('#updateBanner');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -86,4 +86,4 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncCalend
 window.setInterval(syncCalendarDay,30000);
 window.addEventListener('online',()=>{if(currentView==='profile')render('profile');toast('Соединение восстановлено')});
 window.addEventListener('offline',()=>{if(currentView==='profile')render('profile');toast('Офлайн-режим: данные сохраняются')});
-if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=31').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
+if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=32').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
