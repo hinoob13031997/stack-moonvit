@@ -150,9 +150,9 @@ h3{font-size:15px;margin:0}
 .product-choice span{font-size:11px;color:var(--moss)}
 .stack-list span,.day-detail span{padding:13px;background:var(--card);border:1px solid var(--line);border-radius:13px;font-size:12px}
 .modal-wrap{position:fixed;z-index:30;inset:0;background:#1720198f;backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:veil-in .2s ease-out}
-.modal{width:min(100%,430px);max-height:calc(100dvh - max(12px,env(safe-area-inset-top)));overflow-y:auto;overscroll-behavior:contain;scroll-padding-bottom:calc(28px + env(safe-area-inset-bottom));background:var(--paper);border-radius:26px 26px 0 0;padding:32px 22px calc(34px + env(safe-area-inset-bottom));position:relative;box-shadow:0 -16px 50px #17201924;animation:sheet-in .24s ease-out}
+.modal{width:min(100%,430px);max-height:calc(var(--visual-viewport-height,100dvh) - max(12px,env(safe-area-inset-top)));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scroll-padding:70px 0 max(42vh,calc(34px + env(safe-area-inset-bottom)));background:var(--paper);border-radius:26px 26px 0 0;padding:32px 22px calc(34px + env(safe-area-inset-bottom));position:relative;box-shadow:0 -16px 50px #17201924;animation:sheet-in .24s ease-out}
 .modal:before{content:'';position:absolute;top:9px;left:50%;width:38px;height:4px;border-radius:4px;background:#c9cbc4;transform:translateX(-50%)}
-.close{position:absolute;right:12px;top:15px;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--muted)}
+.close{position:sticky;z-index:2;top:8px;margin:-17px -10px -27px auto;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:color-mix(in srgb,var(--paper) 88%,transparent);color:var(--muted);box-shadow:0 4px 12px #1720190d}
 .close .icon{width:22px;height:22px}
 .close:active{background:var(--sage)}
 .checkin-fields label{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-top:25px}
@@ -323,4 +323,5 @@ h3{font-size:15px;margin:0}
 .modal h2{padding-right:38px;overflow-wrap:anywhere}
 .day-detail span,.manage-row b,.onboarding .subtitle{overflow-wrap:anywhere}
 .history>button>span,.history-empty>span{min-width:0;overflow-wrap:anywhere}
-.field input,.field textarea{min-width:0;scroll-margin:24px}
+.field input,.field select,.field textarea{min-width:0;scroll-margin:80px 0 max(42vh,180px)}
+.modal>.primary,.modal>.danger,.modal>.file-picker{min-height:48px}

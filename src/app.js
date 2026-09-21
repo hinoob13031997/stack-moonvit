@@ -1,5 +1,5 @@
-import {store} from './store.js?v=30';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=30';
+import {store} from './store.js?v=31';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=31';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast'),updateBanner=document.querySelector('#updateBanner');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -8,6 +8,8 @@ let currentView='today',toastTimer,swRegistration=null;
 function render(view=currentView){currentView=view;app.innerHTML=views[view]();nav.classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(button=>button.classList.toggle('active',button.dataset.view===view));window.scrollTo(0,0)}
 function renderOnboarding(){app.innerHTML=onboardingView();nav.classList.add('hidden')}
 function toast(text){clearTimeout(toastTimer);toastEl.textContent=text;toastEl.classList.add('show');toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1700)}
+function syncCalendarDay(){if(!store.syncDay())return false;document.querySelectorAll('.modal-wrap').forEach(item=>item.remove());store.state.onboarded?render():renderOnboarding();toast('Начался новый день');return true}
+function syncViewport(){document.documentElement.style.setProperty('--visual-viewport-height',`${window.visualViewport?.height||window.innerHeight}px`)}
 function completeOnboarding(){store.install(store.state.goal);store.state.activeStack=store.state.goal;store.state.onboarded=true;store.state.onboardingStep=0;store.save();render('stacks')}
 
 function updateCategoryAdvice(){const title=document.querySelector('#customTitle')?.value||'',selected=document.querySelector('#customStack')?.value,suggested=store.suggestCategory(title),advice=document.querySelector('[data-category-advice]');if(advice)advice.textContent=suggested&&suggested!==selected?(store.state.installed.includes(suggested)?`Похоже, это относится к ${suggested}. Категорию можно изменить.`:`Похоже, это относится к ${suggested}. Сначала добавь эту категорию.`):''}
@@ -15,6 +17,7 @@ document.addEventListener('input',event=>{if(event.target.matches('[data-metric]
 document.addEventListener('change',event=>{if(event.target.id==='customKind'){document.querySelector('[data-steps]')?.classList.toggle('hidden',event.target.value!=='process');return}if(event.target.id==='customSchedule'){document.querySelector('[data-days]')?.classList.toggle('hidden',event.target.value!=='custom');return}if(event.target.id==='customStack'){const hints={SLEEP:'Сон, режим и вечернее восстановление',FOCUS:'Работа, учёба и управление вниманием',TRAIN:'Тренировки, движение и восстановление тела',BALANCE:'Отдых, настроение и снижение перегрузки'};const hint=document.querySelector('[data-category-hint]');if(hint)hint.textContent=hints[event.target.value];updateCategoryAdvice();return}if(!event.target.matches('[data-backup-file]'))return;const file=event.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const restored=store.restore(JSON.parse(reader.result));if(!restored)throw new Error('invalid');event.target.closest('.modal-wrap').remove();render('profile');toast('Резервная копия восстановлена')}catch{toast('Не удалось прочитать резервную копию')}};reader.readAsText(file)});
 
 document.addEventListener('click',event=>{
+  if(syncCalendarDay())return;
   const target=event.target;
   if(target.closest('[data-reload-update]')){window.location.reload();return}
   if(target.matches('.modal-wrap')){target.remove();return}
@@ -71,8 +74,16 @@ document.addEventListener('click',event=>{
   if(target.closest('[data-restart]')){store.state.onboarded=false;store.state.onboardingStep=0;store.save();renderOnboarding()}
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelector('.modal-wrap')?.remove()});
+document.addEventListener('focusin',event=>{if(!event.target.closest?.('.modal'))return;setTimeout(()=>{if(document.activeElement===event.target)event.target.scrollIntoView({block:'nearest'})},250)});
 
 store.state.onboarded?render():renderOnboarding();
+syncViewport();
+window.visualViewport?.addEventListener('resize',syncViewport);
+window.addEventListener('resize',syncViewport);
+window.addEventListener('focus',syncCalendarDay);
+window.addEventListener('pageshow',syncCalendarDay);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncCalendarDay()});
+window.setInterval(syncCalendarDay,30000);
 window.addEventListener('online',()=>{if(currentView==='profile')render('profile');toast('Соединение восстановлено')});
 window.addEventListener('offline',()=>{if(currentView==='profile')render('profile');toast('Офлайн-режим: данные сохраняются')});
-if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=30').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
+if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=31').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
