@@ -1,7 +1,7 @@
-import {STACK_LIBRARY,TODAY,formatDay,longToday} from './data.js?v=32';
-import {store} from './store.js?v=32';
+import {STACK_LIBRARY,TODAY,formatDay,longToday} from './data.js?v=33';
+import {store} from './store.js?v=33';
 
-const APP_VERSION='32';
+const APP_VERSION='33';
 const header=(title,subtitle)=>`<header class="topbar"><div class="brand">STACK <span>× MOONVIT</span></div><button class="avatar" data-view="profile" aria-label="Открыть профиль">${icon('user')}</button></header><p class="eyebrow">${longToday()}</p><h1>${title}</h1><p class="subtitle">${subtitle}</p>${title==='Прогресс'?weeklyCard(store.state.activeStack):''}`;
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const icon=(name,className='')=>`<svg class="icon ${className}" aria-hidden="true"><use href="#icon-${name}"/></svg>`;

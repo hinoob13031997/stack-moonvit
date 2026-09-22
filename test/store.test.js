@@ -32,6 +32,21 @@ async function loadStore(state){
   return (await import(`../src/store.js?test=${moduleIndex++}`)).store;
 }
 
+async function loadRaw(value){
+  now='2026-09-21T12:00:00Z';
+  localStorage=new MemoryStorage();
+  localStorage.setItem('stack-moonvit-v3',value);
+  return (await import(`../src/store.js?test=${moduleIndex++}`)).store;
+}
+
+test('повреждённое локальное состояние не блокирует запуск',async()=>{
+  const store=await loadRaw('{broken');
+  assert.deepEqual(store.state.installed,['SLEEP']);
+  assert.deepEqual(store.record().done,[]);
+  assert.deepEqual(store.record().checkins,{});
+  assert.deepEqual(store.record().processSteps,{});
+});
+
 test('создаёт новый день без потери предыдущей записи',async()=>{
   const store=await loadStore(baseState({records:{'2026-09-21':{done:['old'],checkins:{},processSteps:{}}}}));
   now='2026-09-22T00:01:00Z';
@@ -113,6 +128,30 @@ test('восстановление старой копии нормализуе�
   assert.deepEqual(store.state.customActions[0].pauses,[]);
   assert.deepEqual(store.state.customActions[0].revisions,[]);
   assert.doesNotThrow(()=>store.actions('SLEEP'));
+});
+
+test('восстановление нормализует исторические снимки действий',async()=>{
+  const store=await loadStore(baseState({}));
+  const restored=store.restore({format:'STACK_MOONVIT_BACKUP',state:baseState({customActions:[{id:'legacy-revision',stackCode:'SLEEP',kind:'process',title:'Новый процесс',schedule:'daily',period:'day',steps:['Новый шаг'],createdAt:'2026-09-18',revisions:[{from:'2026-09-19',to:'2026-09-20',snapshot:{stackCode:'SLEEP',title:'Старый процесс',schedule:'custom',days:['0','7'],period:'evening',steps:['Старый шаг']}}]}]})});
+  assert.equal(restored,true);
+  const historical=store.actions('SLEEP','2026-09-20')[0];
+  assert.deepEqual(historical.days,[0]);
+  assert.equal(historical.steps[0].title,'Старый шаг');
+  assert.ok(historical.steps[0].id);
+});
+
+test('некорректная копия не заменяет текущие данные',async()=>{
+  const store=await loadStore(baseState({ownerName:'Анна'})),before=JSON.stringify(store.state);
+  assert.equal(store.restore({format:'STACK_MOONVIT_BACKUP',state:{installed:['SLEEP'],records:{'2026-09-21':null}}}),false);
+  assert.equal(JSON.stringify(store.state),before);
+});
+
+test('старая копия сохраняет период активного готового примера',async()=>{
+  const store=await loadStore(baseState({}));
+  assert.equal(store.restore({format:'STACK_MOONVIT_BACKUP',state:baseState({templateActions:['sleep-screen']})}),true);
+  now='2026-09-22T12:00:00Z';
+  store.syncDay();
+  assert.equal(store.actions('SLEEP','2026-09-21').some(action=>action.id==='sleep-screen'),true);
 });
 
 test('основной сценарий проходит от расписания до недельного решения и эксперимента',async()=>{

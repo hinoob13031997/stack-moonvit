@@ -1,24 +1,30 @@
-import {STACK_LIBRARY,TODAY} from './data.js?v=32';
+import {STACK_LIBRARY,TODAY} from './data.js?v=33';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
 const shiftDay=(date,amount)=>{const value=new Date(`${date}T12:00:00`);value.setDate(value.getDate()+amount);return `${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')}`};
 const actionSnapshot=action=>({stackCode:action.stackCode,title:action.title,schedule:action.schedule,days:[...(action.days||[])],period:action.period,steps:(action.steps||[]).map(step=>({...step})),order:action.order});
-const normalizeAction=(action,index=0)=>({...action,kind:action.kind==='process'?'process':'habit',period:['morning','day','evening'].includes(action.period)?action.period:'day',schedule:['daily','weekdays','custom'].includes(action.schedule)?action.schedule:'daily',days:Array.isArray(action.days)?action.days.map(Number).filter(day=>day>=0&&day<=6):[],steps:Array.isArray(action.steps)?action.steps.map((step,stepIndex)=>typeof step==='string'?{id:`${action.id}-step-${stepIndex}`,title:step}:step?.title?{...step,id:step.id||`${action.id}-step-${stepIndex}`}:null).filter(Boolean):[],pauses:Array.isArray(action.pauses)?action.pauses:[],order:Number.isFinite(action.order)?action.order:index,revisions:Array.isArray(action.revisions)?action.revisions:[],createdAt:action.createdAt||TODAY()});
+const isObject=value=>Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
+const safeParse=value=>{try{return JSON.parse(value)}catch{return null}};
+const normalizeDays=days=>Array.isArray(days)?[...new Set(days.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6))]:[];
+const normalizeSteps=(steps,id,prefix='step')=>Array.isArray(steps)?steps.map((step,index)=>{const title=String(typeof step==='string'?step:step?.title||'').trim();return title?{...(isObject(step)?step:{}),id:isObject(step)&&step.id?String(step.id):`${id}-${prefix}-${index}`,title}:null}).filter(Boolean):[];
+const normalizeTemplateHistory=value=>isObject(value)?Object.fromEntries(Object.entries(value).map(([id,periods])=>[id,Array.isArray(periods)?periods.filter(period=>isObject(period)&&typeof period.from==='string'):[]])):{};
+const normalizeSnapshot=(snapshot,action,index)=>{const source=isObject(snapshot)?snapshot:{},schedule=['daily','weekdays','custom'].includes(source.schedule)?source.schedule:action.schedule,period=['morning','day','evening'].includes(source.period)?source.period:action.period;return {stackCode:STACK_LIBRARY[source.stackCode]?source.stackCode:action.stackCode,title:String(source.title||action.title||'').trim().slice(0,80),schedule,days:normalizeDays(source.days??action.days),period,steps:normalizeSteps(source.steps??action.steps,action.id,`revision-${index}-step`),order:Number.isFinite(source.order)?source.order:action.order}};
+const normalizeAction=(value,index=0)=>{if(!isObject(value)||!value.id)return null;const action={...value,id:String(value.id),title:String(value.title||'').trim().slice(0,80),kind:value.kind==='process'?'process':'habit',period:['morning','day','evening'].includes(value.period)?value.period:'day',schedule:['daily','weekdays','custom'].includes(value.schedule)?value.schedule:'daily',days:normalizeDays(value.days),steps:normalizeSteps(value.steps,value.id),pauses:Array.isArray(value.pauses)?value.pauses.filter(isObject):[],order:Number.isFinite(value.order)?value.order:index,revisions:[],createdAt:value.createdAt||TODAY()};action.revisions=Array.isArray(value.revisions)?value.revisions.map((revision,revisionIndex)=>isObject(revision)&&typeof revision.from==='string'&&typeof revision.to==='string'?{...revision,snapshot:normalizeSnapshot(revision.snapshot,action,revisionIndex)}:null).filter(Boolean):[];return action};
 
-function normalizeRecord(record={}){
+function normalizeRecord(value={}){
+  const record=isObject(value)?value:{};
   const normalized={...emptyRecord(),...record,done:Array.isArray(record.done)?record.done:[],checkins:{...(record.checkins||{})},processSteps:{...(record.processSteps||{})}};
   if((record.sleep!=null||record.energy!=null)&&!normalized.checkins.SLEEP) normalized.checkins.SLEEP={sleep:record.sleep,energy:record.energy};
   return normalized;
 }
 
 function migrate(){
-  const current=JSON.parse(localStorage.getItem(KEY)||'null');
-  if(current)current.ownerName=String(current.ownerName||'').trim().slice(0,40);
-  if(current){current.records=Object.fromEntries(Object.entries(current.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=current.experiments||{};current.experimentHistory=current.experimentHistory||{};current.weeklyReviews=Array.isArray(current.weeklyReviews)?current.weeklyReviews:[];current.customActions=Array.isArray(current.customActions)?current.customActions.map(normalizeAction):[];current.todayHintDismissed=Boolean(current.todayHintDismissed);current.templateActions=current.templateActions||[];current.templateHistory=current.templateHistory||{};current.templateActions.forEach(id=>{if(!(current.templateHistory[id]||[]).some(period=>!period.to))(current.templateHistory[id]=current.templateHistory[id]||[]).push({from:TODAY(),to:null})});return current}
-  const old=JSON.parse(localStorage.getItem('stack-moonvit-v2')||localStorage.getItem('stack-moonvit-v1')||'{}');
-  const installed=['SLEEP',...(old.stacks||[]).map(s=>s.code)].filter((x,i,a)=>a.indexOf(x)===i&&STACK_LIBRARY[x]);
-  const records=Object.fromEntries(Object.entries(old.records||{}).map(([date,record])=>[date,normalizeRecord(record)]));
+  const current=safeParse(localStorage.getItem(KEY)||'null');
+  if(isObject(current)){current.ownerName=String(current.ownerName||'').trim().slice(0,40);current.records=Object.fromEntries(Object.entries(isObject(current.records)?current.records:{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=isObject(current.experiments)?current.experiments:{};current.experimentHistory=isObject(current.experimentHistory)?current.experimentHistory:{};current.weeklyReviews=Array.isArray(current.weeklyReviews)?current.weeklyReviews:[];current.customActions=Array.isArray(current.customActions)?current.customActions.map(normalizeAction).filter(Boolean):[];current.todayHintDismissed=Boolean(current.todayHintDismissed);current.templateActions=Array.isArray(current.templateActions)?current.templateActions:[];current.templateHistory=normalizeTemplateHistory(current.templateHistory);current.templateActions.forEach(id=>{const history=current.templateHistory[id]||[];if(!history.some(period=>!period.to))history.push({from:TODAY(),to:null});current.templateHistory[id]=history});current.installed=Array.isArray(current.installed)?current.installed.filter((code,index,items)=>STACK_LIBRARY[code]&&items.indexOf(code)===index):['SLEEP'];if(!current.installed.includes('SLEEP'))current.installed.unshift('SLEEP');if(!current.installed.includes(current.activeStack))current.activeStack='SLEEP';return current}
+  const oldValue=safeParse(localStorage.getItem('stack-moonvit-v2')||localStorage.getItem('stack-moonvit-v1')||'{}'),old=isObject(oldValue)?oldValue:{},oldStacks=Array.isArray(old.stacks)?old.stacks:[];
+  const installed=['SLEEP',...oldStacks.map(stack=>stack?.code)].filter((code,index,items)=>items.indexOf(code)===index&&STACK_LIBRARY[code]);
+  const records=Object.fromEntries(Object.entries(isObject(old.records)?old.records:{}).map(([date,record])=>[date,normalizeRecord(record)]));
   if(!records[TODAY()])records[TODAY()]=normalizeRecord({done:old.done||[],sleep:null,energy:null});
   return {onboarded:Boolean(old.onboarded),ownerName:String(old.ownerName||old.name||'').trim().slice(0,40),goal:old.goal||'SLEEP',moonConnected:Boolean(old.moonConnected),activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},weeklyReviews:[],customActions:[],templateActions:[],templateHistory:{},todayHintDismissed:false,onboardingStep:0};
 }
@@ -146,9 +152,11 @@ class StackStore{
   backup(){return {format:'STACK_MOONVIT_BACKUP',version:2,exportedAt:new Date().toISOString(),state:JSON.parse(JSON.stringify(this.state))}}
   restore(payload){
     const incoming=payload?.format==='STACK_MOONVIT_BACKUP'?payload.state:payload?.state;
-    if(!incoming||typeof incoming!=='object'||!incoming.records||!Array.isArray(incoming.installed))return false;
-    const installed=incoming.installed.filter(code=>STACK_LIBRARY[code]);if(!installed.includes('SLEEP'))installed.unshift('SLEEP');
-    this.state={...this.state,...incoming,ownerName:String(incoming.ownerName||'').trim().replace(/\s+/g,' ').slice(0,40),installed,activeStack:installed.includes(incoming.activeStack)?incoming.activeStack:'SLEEP',records:Object.fromEntries(Object.entries(incoming.records).map(([date,record])=>[date,normalizeRecord(record)])),experiments:incoming.experiments||{},experimentHistory:incoming.experimentHistory||{},weeklyReviews:Array.isArray(incoming.weeklyReviews)?incoming.weeklyReviews:[],customActions:Array.isArray(incoming.customActions)?incoming.customActions.map(normalizeAction):[],templateActions:Array.isArray(incoming.templateActions)?incoming.templateActions:[],templateHistory:incoming.templateHistory||{}};
+    if(!isObject(incoming)||!isObject(incoming.records)||Object.values(incoming.records).some(record=>!isObject(record))||!Array.isArray(incoming.installed))return false;
+    const installed=incoming.installed.filter((code,index,items)=>STACK_LIBRARY[code]&&items.indexOf(code)===index);if(!installed.includes('SLEEP'))installed.unshift('SLEEP');
+    const templateActions=Array.isArray(incoming.templateActions)?incoming.templateActions:[],templateHistory=normalizeTemplateHistory(incoming.templateHistory);
+    templateActions.forEach(id=>{const history=templateHistory[id]||[];if(!history.some(period=>!period.to))history.push({from:TODAY(),to:null});templateHistory[id]=history});
+    this.state={...this.state,...incoming,ownerName:String(incoming.ownerName||'').trim().replace(/\s+/g,' ').slice(0,40),installed,activeStack:installed.includes(incoming.activeStack)?incoming.activeStack:'SLEEP',records:Object.fromEntries(Object.entries(incoming.records).map(([date,record])=>[date,normalizeRecord(record)])),experiments:isObject(incoming.experiments)?incoming.experiments:{},experimentHistory:isObject(incoming.experimentHistory)?incoming.experimentHistory:{},weeklyReviews:Array.isArray(incoming.weeklyReviews)?incoming.weeklyReviews:[],customActions:Array.isArray(incoming.customActions)?incoming.customActions.map(normalizeAction).filter(Boolean):[],templateActions,templateHistory};
     this.day=TODAY();this.ensureToday();this.save();return true;
   }
 }
