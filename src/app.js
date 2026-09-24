@@ -1,5 +1,5 @@
-import {store} from './store.js?v=35';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,moonvitModal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=35';
+import {store} from './store.js?v=36';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,moonvitModal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=36';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast'),updateBanner=document.querySelector('#updateBanner');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -29,6 +29,7 @@ document.addEventListener('click',event=>{
   if(target.closest('[data-onboarding-custom]')){completeOnboarding();customActionModal(store.state.goal);return}
   if(target.closest('[data-onboarding-templates]')){completeOnboarding();templatesModal(store.state.goal);return}
   if(target.closest('[data-onboarding-empty]')){completeOnboarding();render('today');return}
+  const planet=target.closest('[data-planet-pulse]');if(planet){planet.classList.remove('pulse');void planet.offsetWidth;planet.classList.add('pulse');window.setTimeout(()=>planet.classList.remove('pulse'),800);return}
   const task=target.closest('[data-task]');if(task){const action=store.actions().find(a=>a.id===task.dataset.task);if(action?.checkin){checkinModal();return}const done=store.toggle(task.dataset.task);render();toast(action?.product?(done?'Приём отмечен':'Отметка снята'):(done?'Выполнено':'Отметка снята'));return}
   const process=target.closest('[data-process]');if(process){processModal(process.dataset.process);return}
   const processStep=target.closest('[data-process-step]');if(processStep){const complete=store.toggleProcessStep(processStep.dataset.processId,processStep.dataset.processStep);processStep.closest('.modal-wrap').remove();processModal(processStep.dataset.processId);if(complete)toast('Процесс выполнен');return}
@@ -88,4 +89,4 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncCalend
 window.setInterval(syncCalendarDay,30000);
 window.addEventListener('online',()=>{if(currentView==='profile')render('profile');toast('Соединение восстановлено')});
 window.addEventListener('offline',()=>{if(currentView==='profile')render('profile');toast('Офлайн-режим: данные сохраняются')});
-if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=35').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
+if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=36').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
