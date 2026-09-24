@@ -1,5 +1,5 @@
-const CACHE='stack-moonvit-shell-v40';
-const SHELL=['./','./index.html','./styles/app.css?v=40','./src/app.js?v=40','./src/data.js?v=40','./src/store.js?v=40','./src/ui.js?v=40','./manifest.webmanifest?v=40','./assets/planets/sleep.webp?v=40','./assets/planets/focus.webp?v=40','./assets/planets/train.webp?v=40','./assets/planets/balance.webp?v=40','./assets/planets/grow.webp?v=40','./assets/planets/capital.webp?v=40','./icon.svg','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
+const CACHE='stack-moonvit-shell-v41';
+const SHELL=['./','./index.html','./styles/app.css?v=41','./src/app.js?v=41','./src/data.js?v=41','./src/store.js?v=41','./src/ui.js?v=41','./manifest.webmanifest?v=41','./assets/planets/sleep.webp?v=41','./assets/planets/focus.webp?v=41','./assets/planets/train.webp?v=41','./assets/planets/balance.webp?v=41','./assets/planets/grow.webp?v=41','./assets/planets/capital.webp?v=41','./icon.svg','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));

@@ -80,7 +80,7 @@ h3{font-size:15px;margin:0}
 .planet-hero .planet-body:before{z-index:1;inset:9%;background:radial-gradient(circle,var(--world-light) 0,transparent 68%);opacity:var(--core-strength);filter:blur(13px);mix-blend-mode:screen}
 .planet-hero .planet-body:after{z-index:3;inset:3%;background:radial-gradient(circle at 30% 25%,var(--world-light) 0,transparent 25%);opacity:var(--core-strength);filter:blur(9px);mix-blend-mode:screen}
 .planet-hero.stage-0 .planet-body{filter:saturate(.42) brightness(.7)}
-.planet-hero.stage-0 .planet-art{opacity:.58;filter:brightness(.48) saturate(.38) contrast(1.14) drop-shadow(0 12px 14px #02040ba8)}
+.planet-hero.stage-0 .planet-art{opacity:.76;filter:brightness(.64) saturate(.58) contrast(1.12) drop-shadow(0 12px 14px #02040ba8)}
 .planet-hero.stage-1 .planet-art{opacity:.86;filter:brightness(.74) saturate(.72) contrast(1.1) drop-shadow(0 16px 17px #02040b9c)}
 .planet-hero.stage-2 .planet-art{filter:brightness(.84) saturate(.88) contrast(1.08) drop-shadow(0 18px 18px #02040b8f)}
 .planet-hero.stage-3 .planet-art{filter:brightness(.94) saturate(.98) contrast(1.06) drop-shadow(0 0 9px var(--world-glow)) drop-shadow(0 19px 18px #02040b8a)}
@@ -207,7 +207,7 @@ h3{font-size:15px;margin:0}
 .world-node .world-sphere:after{display:none}
 .world-node .planet-art{position:absolute;z-index:2;inset:-9%;width:118%;height:118%;object-fit:contain;filter:brightness(.82) saturate(.8) contrast(1.08) drop-shadow(0 14px 13px #02040ba3);transition:filter .7s,opacity .7s}
 .world-node.stage-0 .world-sphere{filter:none;box-shadow:none}
-.world-node.stage-0 .planet-art{opacity:.55;filter:brightness(.5) saturate(.38) contrast(1.12) drop-shadow(0 12px 12px #02040bab)}
+.world-node.stage-0 .planet-art{opacity:.8;filter:brightness(.68) saturate(.6) contrast(1.1) drop-shadow(0 12px 12px #02040bab)}
 .world-node.stage-1 .planet-art{opacity:.86;filter:brightness(.74) saturate(.72) contrast(1.1) drop-shadow(0 14px 13px #02040ba3)}
 .world-node.stage-3 .planet-art{filter:brightness(.94) saturate(.98) contrast(1.06) drop-shadow(0 0 8px var(--world-glow)) drop-shadow(0 15px 14px #02040b96)}
 .world-node.stage-4 .planet-art{filter:brightness(1.01) saturate(1.04) contrast(1.05) drop-shadow(0 0 12px var(--world-glow)) drop-shadow(0 16px 15px #02040b91)}
