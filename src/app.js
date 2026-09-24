@@ -1,5 +1,5 @@
-import {store} from './store.js?v=33';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=33';
+import {store} from './store.js?v=34';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,moonvitModal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=34';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast'),updateBanner=document.querySelector('#updateBanner');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -64,7 +64,9 @@ document.addEventListener('click',event=>{
   const startExperiment=target.closest('[data-start-experiment]');if(startExperiment){store.startExperiment(store.state.activeStack,startExperiment.dataset.experimentAction||null);render('insights');toast('Эксперимент начат на 3 дня');return}
   if(target.closest('[data-finish-experiment]')){experimentResultModal();return}
   const experimentOutcome=target.closest('[data-experiment-outcome]');if(experimentOutcome){store.finishExperiment(store.state.activeStack,experimentOutcome.dataset.experimentOutcome);experimentOutcome.closest('.modal-wrap').remove();render('insights');toast('Результат эксперимента сохранён');return}
-  if(target.closest('[data-toggle-moon]')){store.state.moonConnected=!store.state.moonConnected;store.save();render('profile');toast(store.state.moonConnected?'Moonvit подключён':'Moonvit отключён');return}
+  if(target.closest('[data-toggle-moon]')){moonvitModal();return}
+  if(target.closest('[data-enable-moon]')){store.setMoonvit(true);target.closest('.modal-wrap').remove();render('profile');toast('Отметка Moonvit включена');return}
+  if(target.closest('[data-disable-moon]')){store.setMoonvit(false);target.closest('.modal-wrap').remove();render('profile');toast('Отметка Moonvit отключена');return}
   if(target.closest('[data-edit-owner]')){modal(`<p class="eyebrow">Персонализация</p><h2>Как к тебе обращаться?</h2><p class="subtitle">Имя используется только внутри STACK и хранится на этом устройстве.</p><label class="field modal-owner-field">Имя<input id="profileOwnerName" maxlength="40" autocomplete="name" value="${String(store.state.ownerName||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}" placeholder="Можно оставить пустым"></label><button class="primary" data-save-owner>Сохранить</button>`);return}
   if(target.closest('[data-save-owner]')){store.setOwnerName(document.querySelector('#profileOwnerName')?.value);target.closest('.modal-wrap').remove();render('profile');toast('Имя сохранено');return}
   if(target.closest('[data-check-update]')){if(!swRegistration){toast('Обновление недоступно');return}swRegistration.update().then(()=>toast('Проверка обновлений завершена')).catch(()=>toast('Не удалось проверить обновление'));return}
@@ -86,4 +88,4 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncCalend
 window.setInterval(syncCalendarDay,30000);
 window.addEventListener('online',()=>{if(currentView==='profile')render('profile');toast('Соединение восстановлено')});
 window.addEventListener('offline',()=>{if(currentView==='profile')render('profile');toast('Офлайн-режим: данные сохраняются')});
-if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=33').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
+if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=34').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}

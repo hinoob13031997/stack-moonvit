@@ -154,6 +154,46 @@ test('старая копия сохраняет период активного
   assert.equal(store.actions('SLEEP','2026-09-21').some(action=>action.id==='sleep-screen'),true);
 });
 
+test('Moonvit включается как отдельная ручная отметка и сохраняет прошлое',async()=>{
+  const store=await loadStore(baseState({}));
+  assert.equal(store.setMoonvit(true),true);
+  assert.equal(store.state.templateActions.includes('sleep-moon'),true);
+  assert.equal(store.actions('SLEEP').some(action=>action.id==='sleep-moon'),true);
+  store.toggle('sleep-moon');
+  assert.equal(store.setMoonvit(false),false);
+  assert.equal(store.actions('SLEEP').some(action=>action.id==='sleep-moon'),false);
+  assert.equal(store.actions('SLEEP','2026-09-21',{includeRecorded:true}).some(action=>action.id==='sleep-moon'),true);
+  assert.equal(store.record().done.includes('sleep-moon'),true);
+});
+
+test('Moonvit не влияет на дисциплину и сброс действий',async()=>{
+  const store=await loadStore(baseState({moonConnected:true,templateActions:['sleep-screen','sleep-moon'],templateHistory:{'sleep-screen':[{from:'2026-09-21',to:null}],'sleep-moon':[{from:'2026-09-21',to:null}]},records:{'2026-09-21':{done:['sleep-screen','sleep-moon'],checkins:{},processSteps:{}}}}));
+  assert.equal(store.completed('SLEEP'),1);
+  assert.deepEqual(store.disciplineStats('SLEEP'),{percent:100,days:1,done:1,total:1});
+  store.resetToday('SLEEP');
+  assert.equal(store.record().done.includes('sleep-screen'),false);
+  assert.equal(store.record().done.includes('sleep-moon'),true);
+});
+
+test('наблюдение Moonvit сравнивает вечер с состоянием следующего утра',async()=>{
+  const records={
+    '2026-09-15':{done:['sleep-moon'],checkins:{},processSteps:{}},
+    '2026-09-16':{done:['sleep-moon'],checkins:{SLEEP:{sleep:4,energy:4}},processSteps:{}},
+    '2026-09-17':{done:[],checkins:{SLEEP:{sleep:5,energy:5}},processSteps:{}},
+    '2026-09-18':{done:[],checkins:{SLEEP:{sleep:2,energy:2}},processSteps:{}},
+    '2026-09-19':{done:[],checkins:{SLEEP:{sleep:2,energy:2}},processSteps:{}},
+    '2026-09-20':{done:[],checkins:{SLEEP:{sleep:3,energy:3}},processSteps:{}},
+    '2026-09-21':{done:[],checkins:{},processSteps:{}}
+  };
+  const store=await loadStore(baseState({moonConnected:true,templateActions:['sleep-moon'],templateHistory:{'sleep-moon':[{from:'2026-09-15',to:null}]},records})),insight=store.moonvitInsight();
+  assert.equal(insight.ready,true);
+  assert.equal(insight.points,5);
+  assert.equal(insight.withCount,2);
+  assert.equal(insight.withoutCount,3);
+  assert.equal(insight.withAverage,4.5);
+  assert.ok(insight.withoutAverage<2.4);
+});
+
 test('основной сценарий проходит от расписания до недельного решения и эксперимента',async()=>{
   const store=await loadStore(baseState({}));
   const actionId=store.addCustomAction({stackCode:'SLEEP',title:'Вечерний ритуал',kind:'habit',schedule:'weekdays',period:'evening',days:[],steps:[]});

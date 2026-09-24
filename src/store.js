@@ -1,4 +1,4 @@
-import {STACK_LIBRARY,TODAY} from './data.js?v=33';
+import {STACK_LIBRARY,TODAY} from './data.js?v=34';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
@@ -38,11 +38,18 @@ class StackStore{
   record(date=TODAY()){if(date===TODAY())this.ensureToday(date);return this.state.records[date]||null}
   stack(code=this.state.activeStack){return STACK_LIBRARY[code]||STACK_LIBRARY.SLEEP}
   actions(code=this.state.activeStack,date=TODAY(),options={}){const record=this.record(date),includeRecorded=options.includeRecorded??date!==TODAY(),base=this.stack(code).actions.filter(action=>!action.checkin&&(this.templateScheduled(action.id,date)||includeRecorded&&record?.done.includes(action.id))&&(includeRecorded||this.state.moonConnected||!action.product));const custom=this.state.customActions.map(action=>this.actionAt(action,date,includeRecorded)).filter(action=>action&&action.stackCode===code&&this.isScheduled(action,date,includeRecorded)).sort((a,b)=>(a.order??0)-(b.order??0));return [...base,...custom]}
+  disciplineActions(code=this.state.activeStack,date=TODAY(),options={}){return this.actions(code,date,options).filter(action=>!action.product)}
   customActions(code=this.state.activeStack){return this.state.customActions.filter(action=>action.stackCode===code&&!action.deletedAt).sort((a,b)=>(a.order??0)-(b.order??0))}
   actionAt(action,date=TODAY(),includeRecorded=false){if(date===TODAY()&&!includeRecorded)return action;const revision=(action.revisions||[]).find(item=>date>=item.from&&date<=item.to);return revision?{...action,...revision.snapshot,revisions:action.revisions}:action}
-  templates(code=this.state.activeStack){return this.stack(code).actions.filter(action=>!action.checkin&&(this.state.moonConnected||!action.product))}
+  templates(code=this.state.activeStack){return this.stack(code).actions.filter(action=>!action.checkin&&!action.product)}
   templateScheduled(id,date=TODAY()){if(date===TODAY())return this.state.templateActions.includes(id);return (this.state.templateHistory[id]||[]).some(period=>date>=period.from&&(!period.to||date<=period.to))}
   toggleTemplate(id){const action=Object.values(STACK_LIBRARY).flatMap(stack=>stack.actions).find(item=>item.id===id);if(!action)return false;const history=this.state.templateHistory[id]||[];if(this.state.templateActions.includes(id)){this.state.templateActions=this.state.templateActions.filter(item=>item!==id);const open=history.find(period=>!period.to);if(open){if(open.from===TODAY())history.splice(history.indexOf(open),1);else open.to=shiftDay(TODAY(),-1)}}else{this.state.templateActions.push(id);history.push({from:TODAY(),to:null})}this.state.templateHistory[id]=history;this.save();return this.state.templateActions.includes(id)}
+  setMoonvit(enabled){
+    const id='sleep-moon',history=Array.isArray(this.state.templateHistory[id])?this.state.templateHistory[id]:[];
+    if(enabled){this.state.moonConnected=true;if(!this.state.templateActions.includes(id))this.state.templateActions.push(id);if(!history.some(period=>!period.to))history.push({from:TODAY(),to:null})}
+    else{this.state.moonConnected=false;this.state.templateActions=this.state.templateActions.filter(item=>item!==id);const open=history.find(period=>!period.to);if(open){if(open.from===TODAY())history.splice(history.indexOf(open),1);else open.to=shiftDay(TODAY(),-1)}}
+    this.state.templateHistory[id]=history;this.save();return this.state.moonConnected;
+  }
   isScheduled(action,date=TODAY(),includeRecorded=date!==TODAY()){
     const record=this.record(date),hasHistory=record?.done.includes(action.id)||Boolean(record?.processSteps?.[action.id]?.length);
     const wasPaused=(action.pauses||[]).some(pause=>date>=pause.from&&date<=pause.to);
@@ -57,7 +64,7 @@ class StackStore{
   toggle(actionId){const r=this.record();r.done=r.done.includes(actionId)?r.done.filter(x=>x!==actionId):[...r.done,actionId];this.save();return r.done.includes(actionId)}
   saveCheckin(code,values){const r=this.record();r.checkins[code]=values;this.save()}
   resetToday(code=this.state.activeStack){
-    const record=this.record(),ids=new Set(this.actions(code).map(action=>action.id));
+    const record=this.record(),ids=new Set(this.disciplineActions(code).map(action=>action.id));
     record.done=record.done.filter(id=>!ids.has(id));
     ids.forEach(id=>delete record.processSteps[id]);
     delete record.checkins[code];
@@ -67,19 +74,19 @@ class StackStore{
   remove(code){if(code==='SLEEP')return false;this.state.installed=this.state.installed.filter(x=>x!==code);delete this.state.experiments[code];if(this.state.activeStack===code)this.state.activeStack='SLEEP';this.save();return true}
   activate(code){if(this.state.installed.includes(code)){this.state.activeStack=code;this.save();return true}return false}
   lastDays(count=7){return Array.from({length:count},(_,i)=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`})}
-  completed(code=this.state.activeStack,date=TODAY(),options={}){const r=this.record(date);return r?r.done.filter(id=>this.actions(code,date,options).some(a=>a.id===id)).length:0}
+  completed(code=this.state.activeStack,date=TODAY(),options={}){const r=this.record(date);return r?r.done.filter(id=>this.disciplineActions(code,date,options).some(a=>a.id===id)).length:0}
   disciplineStats(code=this.state.activeStack){
     const days=this.lastDays().reverse(),history={includeRecorded:true},first=days.findIndex(date=>this.completed(code,date,history)>0||this.checkin(code,date));
     if(first<0)return {percent:0,days:0,done:0,total:0};
-    const tracked=days.slice(first),done=tracked.reduce((sum,date)=>sum+this.completed(code,date,history),0),total=tracked.reduce((sum,date)=>sum+this.actions(code,date,history).length,0);
+    const tracked=days.slice(first),done=tracked.reduce((sum,date)=>sum+this.completed(code,date,history),0),total=tracked.reduce((sum,date)=>sum+this.disciplineActions(code,date,history).length,0);
     if(!total)return {percent:0,days:tracked.length,done:0,total:0};
     return {percent:Math.round(done/total*100),days:tracked.length,done,total};
   }
   discipline(code=this.state.activeStack){return this.disciplineStats(code).percent}
   weeklyReview(code=this.state.activeStack){
-    const dates=this.lastDays().reverse(),history={includeRecorded:true},previous=Array.from({length:7},(_,index)=>shiftDay(TODAY(),-(13-index))),active=dates.filter(date=>this.completed(code,date,history)>0||this.checkin(code,date)),done=dates.reduce((sum,date)=>sum+this.completed(code,date,history),0),total=dates.reduce((sum,date)=>sum+this.actions(code,date,history).length,0),percent=total?Math.round(done/total*100):0;
+    const dates=this.lastDays().reverse(),history={includeRecorded:true},previous=Array.from({length:7},(_,index)=>shiftDay(TODAY(),-(13-index))),active=dates.filter(date=>this.completed(code,date,history)>0||this.checkin(code,date)),done=dates.reduce((sum,date)=>sum+this.completed(code,date,history),0),total=dates.reduce((sum,date)=>sum+this.disciplineActions(code,date,history).length,0),percent=total?Math.round(done/total*100):0;
     const states=dates.map(date=>this.checkin(code,date)).filter(Boolean).map(values=>this.metricAverage(values)),previousStates=previous.map(date=>this.checkin(code,date)).filter(Boolean).map(values=>this.metricAverage(values)),stateAverage=states.length?states.reduce((sum,value)=>sum+value,0)/states.length:null,previousAverage=previousStates.length?previousStates.reduce((sum,value)=>sum+value,0)/previousStates.length:null;
-    const ranked=dates.map(date=>{const planned=this.actions(code,date,history).length,completed=this.completed(code,date,history);return {date,completed,planned,ratio:planned?completed/planned:0}}).filter(day=>day.completed||this.checkin(code,day.date)).sort((a,b)=>b.ratio-a.ratio||b.completed-a.completed),best=ranked[0]||null,performance=this.actionPerformance(code,dates),stable=performance[0]||null,focus=performance.length>1?performance[performance.length-1]:performance[0]||null,saved=this.state.weeklyReviews.find(item=>item.code===code&&item.endedAt===TODAY())||null;
+    const ranked=dates.map(date=>{const planned=this.disciplineActions(code,date,history).length,completed=this.completed(code,date,history);return {date,completed,planned,ratio:planned?completed/planned:0}}).filter(day=>day.completed||this.checkin(code,day.date)).sort((a,b)=>b.ratio-a.ratio||b.completed-a.completed),best=ranked[0]||null,performance=this.actionPerformance(code,dates),stable=performance[0]||null,focus=performance.length>1?performance[performance.length-1]:performance[0]||null,saved=this.state.weeklyReviews.find(item=>item.code===code&&item.endedAt===TODAY())||null;
     const observation=active.length<3?`Ещё ${3-active.length} ${active.length===2?'день':'дня'} с отметками — и обзор станет содержательнее.`:percent>=70?'На этой неделе действия выполнялись устойчиво. Сохрани ритм и меняй только один элемент.':percent>=40?'Ритм уже формируется. Одно выбранное улучшение полезнее, чем расширение списка.':'Неделя была неровной. Это наблюдение, а не провал: сократи фокус до одного выполнимого действия.';
     return {code,dates,activeDays:active.length,ready:active.length>=3,done,total,percent,stateAverage,previousAverage,stateDelta:stateAverage!=null&&previousAverage!=null?stateAverage-previousAverage:null,best,stable,focus,observation,saved};
   }
@@ -125,6 +132,13 @@ class StackStore{
     if(!best)return {ready:false,reason:'actions',points:0,needed:5};
     if(best.points<5||best.withCount<2||best.withoutCount<2)return {ready:false,reason:'data',...best,needed:Math.max(0,5-best.points)};
     return {ready:true,...best,delta:best.withAverage-best.withoutAverage};
+  }
+  moonvitInsight(){
+    const id='sleep-moon',history=this.state.templateHistory[id]||[],hasDone=Object.values(this.state.records).some(record=>record.done?.includes(id)),tracked=history.length>0||hasDone;
+    if(!tracked)return {ready:false,reason:this.state.moonConnected?'setup':'disabled',points:0,withCount:0,withoutCount:0,needed:5};
+    const points=this.lastDays(14).reverse().map(date=>{const state=this.checkin('SLEEP',date),intakeDate=shiftDay(date,-1),record=this.record(intakeDate),done=Boolean(record?.done.includes(id)),scheduled=this.templateScheduled(id,intakeDate);if(!state||!scheduled&&!done)return null;return {date,intakeDate,done,value:this.metricAverage(state)}}).filter(Boolean),withMoon=points.filter(point=>point.done),withoutMoon=points.filter(point=>!point.done),average=items=>items.length?items.reduce((sum,item)=>sum+item.value,0)/items.length:null,base={points:points.length,withCount:withMoon.length,withoutCount:withoutMoon.length,withAverage:average(withMoon),withoutAverage:average(withoutMoon),needed:Math.max(0,5-points.length)};
+    if(points.length<5||withMoon.length<2||withoutMoon.length<2)return {ready:false,reason:'data',...base};
+    return {ready:true,reason:'ready',...base,delta:base.withAverage-base.withoutAverage};
   }
   metricAverage(values){const numbers=Object.values(values).map(Number).filter(Number.isFinite);return numbers.length?numbers.reduce((sum,value)=>sum+value,0)/numbers.length:0}
   correlation(points){

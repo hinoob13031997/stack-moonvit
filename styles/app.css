@@ -148,6 +148,21 @@ h3{font-size:15px;margin:0}
 .product-choice div{flex:1}
 .product-choice b,.product-choice small{display:block}
 .product-choice span{font-size:11px;color:var(--moss)}
+.moon-tracker{display:flex;align-items:center;gap:12px;margin-top:14px;padding:14px;background:#ececf3;border-color:#d8d9e5}
+.moon-tracker>i{flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:linear-gradient(145deg,#aab1da,#3a416c);box-shadow:inset -6px -5px 8px #11173780}
+.moon-tracker>div{min-width:0;flex:1}
+.moon-tracker h2{font-size:14px;margin:2px 0 3px}
+.moon-tracker p:not(.eyebrow){color:var(--muted);font-size:9px;line-height:1.45}
+.moon-tracker>button{flex:0 0 auto;min-height:44px;border:0;border-radius:99px;padding:0 13px;background:var(--moon);color:#fff;font:700 10px Manrope}
+.moon-tracker.done>button{background:#ffffff80;color:var(--moon);border:1px solid #c8cada}
+.moon-insight{margin-top:12px;background:#ececf3;border-color:#d8d9e5}
+.moon-insight h2{font-size:17px;margin:5px 0 7px}
+.moon-steps{display:grid;gap:9px;margin-top:22px}
+.moon-steps span{display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--card)}
+.moon-steps b{flex:0 0 24px;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:var(--moon);color:#fff;font-size:10px}
+.moon-steps p{margin:2px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+.moon-privacy,.moon-collected{margin-top:16px;color:var(--muted);font-size:10px;line-height:1.55}
+.moon-collected{color:var(--moon);font-weight:700}
 .stack-list span,.day-detail span{padding:13px;background:var(--card);border:1px solid var(--line);border-radius:13px;font-size:12px}
 .modal-wrap{position:fixed;z-index:30;inset:0;background:#1720198f;backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;animation:veil-in .2s ease-out}
 .modal{width:min(100%,430px);max-height:calc(var(--visual-viewport-height,100dvh) - max(12px,env(safe-area-inset-top)));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scroll-padding:70px 0 max(42vh,calc(34px + env(safe-area-inset-bottom)));background:var(--paper);border-radius:26px 26px 0 0;padding:32px 22px calc(34px + env(safe-area-inset-bottom));position:relative;box-shadow:0 -16px 50px #17201924;animation:sheet-in .24s ease-out}
