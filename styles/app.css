@@ -24,9 +24,13 @@ h3{font-size:15px;margin:0}
 .planet-focus{--world-a:#dec67f;--world-b:#9b713c;--world-c:#3d3024;--world-light:#fff0bd;--world-glow:#e6c67973}
 .planet-train{--world-a:#db8c70;--world-b:#8e4c48;--world-c:#3d252b;--world-light:#ffd2c0;--world-glow:#dd806f73}
 .planet-balance{--world-a:#79b6aa;--world-b:#416d6f;--world-c:#20343c;--world-light:#c4fff0;--world-glow:#71b9aa73}
+.planet-grow{--world-a:#7caf91;--world-b:#315d54;--world-c:#142e31;--world-light:#d2f2d6;--world-glow:#68b89070}
+.planet-capital{--world-a:#bba46c;--world-b:#5f5238;--world-c:#211f21;--world-light:#ffedb1;--world-glow:#d0aa5370}
 .planet-hero.planet-focus{background:radial-gradient(circle at 78% 12%,#c49b4d30 0,transparent 36%),linear-gradient(148deg,#302b28 0%,#151818 60%,#1b2921 100%)}
 .planet-hero.planet-train{background:radial-gradient(circle at 78% 12%,#b95d4c30 0,transparent 36%),linear-gradient(148deg,#352329 0%,#17181c 60%,#20271e 100%)}
 .planet-hero.planet-balance{background:radial-gradient(circle at 78% 12%,#66aa9b2e 0,transparent 36%),linear-gradient(148deg,#203338 0%,#151a1d 60%,#202a23 100%)}
+.planet-hero.planet-grow{background:radial-gradient(circle at 78% 12%,#5798782e 0,transparent 36%),linear-gradient(148deg,#1c3531 0%,#10191c 60%,#17241f 100%)}
+.planet-hero.planet-capital{background:radial-gradient(circle at 78% 12%,#ad8c4930 0,transparent 36%),linear-gradient(148deg,#312b25 0%,#151517 60%,#20201b 100%)}
 .planet-hero:before{content:'';position:absolute;z-index:-1;inset:0;background:linear-gradient(110deg,#ffffff08,transparent 34%,transparent 70%,#ffffff05);pointer-events:none}
 .planet-stars{position:absolute;inset:0;pointer-events:none}
 .planet-stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff;opacity:.65;animation:star-breathe 3.5s ease-in-out infinite}
@@ -34,6 +38,7 @@ h3{font-size:15px;margin:0}
 .planet-scene{position:absolute;z-index:1;top:4px;right:2px;width:220px;height:220px;border:0;background:none;color:#fff;padding:0;cursor:pointer;perspective:500px}
 .planet-scene>small{position:absolute;right:23px;bottom:6px;opacity:.48;font:600 8px Manrope;letter-spacing:.12em;text-transform:uppercase;transition:opacity .2s}
 .planet-scene:active>small{opacity:.8}
+.planet-aura{position:absolute;z-index:0;left:31px;top:21px;width:166px;height:166px;border-radius:50%;border:1px solid var(--world-light);box-shadow:0 0 22px var(--world-glow),inset 0 0 25px var(--world-glow);opacity:0;transform:scale(.86);transition:opacity .6s,transform .6s}
 .planet-body{position:absolute;z-index:2;left:42px;top:32px;width:142px;height:142px;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 31% 27%,var(--world-light) 0 4%,var(--world-a) 21%,var(--world-b) 58%,var(--world-c) 82%);box-shadow:inset -22px -18px 28px #080a1599,inset 13px 10px 18px #ffffff1f,0 0 28px var(--world-glow),0 24px 45px #03050a8c;animation:planet-float 5.5s ease-in-out infinite;transform-style:preserve-3d}
 .planet-body:after{content:'';position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at 67% 35%,#fff3 0 4px,transparent 5px),radial-gradient(circle at 45% 67%,#090d2140 0 11px,transparent 12px),radial-gradient(circle at 75% 72%,#fff1 0 7px,transparent 8px);mix-blend-mode:soft-light}
 .planet-surface{position:absolute;inset:-20%;border-radius:43%;background:radial-gradient(ellipse at 25% 35%,#ffffff32 0 5%,transparent 6%),radial-gradient(ellipse at 61% 65%,#070a173d 0 11%,transparent 12%),radial-gradient(ellipse at 76% 30%,#ffffff18 0 8%,transparent 9%),linear-gradient(116deg,transparent 20%,#ffffff12 29%,transparent 42%);background-size:135% 100%;filter:blur(.2px);animation:surface-turn 13s linear infinite}
@@ -58,17 +63,39 @@ h3{font-size:15px;margin:0}
 .planet-balance .orbit-one{--orbit-angle:-14deg;z-index:3;left:17px;top:78px;width:198px;height:57px;border:5px double #b6eee055;box-shadow:0 0 14px #76b9aa38}
 .planet-balance .orbit-one i{width:5px;height:5px;right:34px;background:#d4fff4}
 .planet-balance .orbit-two{left:56px;top:48px;width:121px;height:121px;border-style:dashed;border-color:#a9e7d835}
+.planet-grow .planet-body{left:43px;top:33px;width:140px;height:140px;background:radial-gradient(circle at 31% 25%,#d9f2d7 0 3%,#7daf8d 17%,#315d54 48%,#142e31 82%);box-shadow:inset -24px -17px 30px #06161a99,inset 12px 9px 17px #e4f8da2e,0 0 30px var(--world-glow),0 24px 45px #03050a8c}
+.planet-grow .planet-surface{inset:-12%;border-radius:46%;background:radial-gradient(ellipse at 31% 39%,#bfd39b6b 0 13%,transparent 14%),radial-gradient(ellipse at 69% 61%,#a9c88b52 0 17%,transparent 18%),radial-gradient(ellipse at 75% 27%,#d5e9cc38 0 8%,transparent 9%),repeating-linear-gradient(105deg,transparent 0 18px,#e6f4e013 19px 21px,transparent 22px 35px);animation-duration:19s}
+.planet-grow .planet-body:after{background:linear-gradient(125deg,transparent 22%,#e4f5e21c 31%,transparent 40% 59%,#0b252b55 67%,transparent 73%),radial-gradient(circle at 38% 30%,#fff5 0 4px,transparent 5px)}
+.planet-grow .orbit-one{--orbit-angle:-9deg;left:27px;top:73px;width:176px;height:70px;border-color:#b7dfbc45}
+.planet-grow .orbit-two{--orbit-angle:68deg;left:62px;top:49px;width:109px;height:126px;border-style:dotted;border-color:#b7dfbc2e}
+.planet-capital .planet-body{left:44px;top:34px;width:138px;height:138px;background:radial-gradient(circle at 31% 25%,#fff0b5 0 3%,#b8a06a 16%,#5d5037 46%,#1d1c20 82%);box-shadow:inset -24px -17px 31px #08080caa,inset 12px 9px 18px #fff3be30,0 0 28px var(--world-glow),0 24px 45px #03050a9c}
+.planet-capital .planet-surface{inset:-12%;border-radius:49%;background:linear-gradient(35deg,transparent 0 18%,#f6da8538 19% 21%,transparent 22% 43%,#1a171c70 44% 50%,transparent 51% 69%,#ffe4932b 70% 72%,transparent 73%),radial-gradient(circle at 29% 63%,#f8d97970 0 2px,transparent 3px),radial-gradient(circle at 73% 37%,#f8d97970 0 2px,transparent 3px);background-size:100% 100%,18px 18px,23px 23px;animation-duration:26s}
+.planet-capital .planet-body:after{background:linear-gradient(90deg,transparent 46%,#f8dd8a2e 48% 50%,transparent 52%),radial-gradient(circle at 34% 29%,#fff6 0 4px,transparent 5px)}
+.planet-capital .orbit-one{--orbit-angle:-21deg;left:20px;top:70px;width:190px;height:78px;border-color:#f3d47c4f;border-style:double}
+.planet-capital .orbit-two{--orbit-angle:43deg;left:66px;top:48px;width:100px;height:128px;border-color:#e9cb7333}
+.planet-hero.stage-0 .planet-body{filter:saturate(.42) brightness(.72)}
+.planet-hero.stage-0 .orbit-two,.planet-hero.stage-1 .orbit-two{visibility:hidden}
+.planet-hero.stage-2 .planet-aura,.planet-hero.stage-3 .planet-aura,.planet-hero.stage-4 .planet-aura,.planet-hero.stage-5 .planet-aura,.planet-hero.stage-6 .planet-aura{opacity:.34;transform:scale(1)}
+.planet-hero.stage-4 .planet-aura,.planet-hero.stage-5 .planet-aura,.planet-hero.stage-6 .planet-aura{opacity:.58;box-shadow:0 0 34px var(--world-glow),inset 0 0 30px var(--world-glow)}
+.planet-hero.stage-5 .planet-orbit i,.planet-hero.stage-6 .planet-orbit i{transform:scale(1.45);box-shadow:0 0 18px var(--world-light)}
 .planet-scene.pulse .planet-body{animation:planet-pulse .75s cubic-bezier(.2,.8,.2,1)}
 .planet-scene.pulse .planet-orbit{animation:orbit-pulse .75s ease-out}
 .planet-copy{position:relative;z-index:2;margin-top:177px}
 .planet-copy>span{display:block;color:#c9cfca;font-size:9px;font-weight:700;letter-spacing:.15em}
 .planet-copy h2{max-width:285px;margin-top:7px;font-size:23px;line-height:1.12;color:#fff}
 .planet-copy p{max-width:315px;margin:7px 0 17px;color:#bdc6bf;font-size:11px;line-height:1.55}
+.planet-evolution{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 14px;padding:9px 10px;border:1px solid #ffffff12;border-radius:10px;background:#ffffff08}
+.planet-evolution span,.planet-evolution em{font-size:8px;font-style:normal;line-height:1.35}
+.planet-evolution span{color:#e1e6e2;font-weight:700}.planet-evolution em{max-width:47%;color:#87928c;text-align:right}
 .planet-status{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .planet-status small{color:#cad1cb;font-size:9px}
 .planet-status b{font-size:10px;letter-spacing:.06em}
 .planet-progress{height:3px;margin-top:9px;overflow:hidden;border-radius:3px;background:#ffffff1d}
 .planet-progress i{display:block;width:var(--planet-progress);height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--world-a),var(--world-light));box-shadow:0 0 12px var(--world-glow);transition:width .45s ease}
+.moonvit-satellite{position:absolute;z-index:4;left:15px;top:123px;min-height:43px;display:flex;align-items:center;gap:8px;border:1px solid #ffffff1c;border-radius:99px;background:#111829b8;color:#fff;padding:6px 9px 6px 7px;backdrop-filter:blur(12px);font-family:Manrope;text-align:left;box-shadow:0 8px 24px #05071366}
+.moonvit-satellite>i{flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#eef0ff 0 5%,#8e97ca 25%,#3a416c 67%,#171c39 100%);box-shadow:inset -5px -4px 8px #10152d8c,0 0 12px #8993d05c}
+.moonvit-satellite span{min-width:0}.moonvit-satellite b,.moonvit-satellite small{display:block;white-space:nowrap}.moonvit-satellite b{font-size:8px}.moonvit-satellite small{margin-top:2px;color:#9ea7bb;font-size:7px}.moonvit-satellite em{width:19px;height:19px;display:grid;place-items:center;border-radius:50%;background:#ffffff12;font-size:9px;font-style:normal}
+.moonvit-satellite.recorded{border-color:#abb3e04f;background:#242b4ad6}.moonvit-satellite.recorded em{background:#dbe0ff;color:#293154}
 @keyframes planet-float{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-7px) rotate(-2deg)}}
 @keyframes surface-turn{to{transform:rotate(360deg)}}
 @keyframes orbit-breathe{0%,100%{opacity:.62;transform:rotate(var(--orbit-angle)) scale(1)}50%{opacity:.9;transform:rotate(var(--orbit-angle)) scale(1.035)}}
@@ -154,6 +181,18 @@ h3{font-size:15px;margin:0}
 .world-node.planet-balance .world-sphere{width:98px;height:98px;margin-top:4px;background:radial-gradient(circle at 32% 27%,#e0fff7 0 4%,#85c6b9 18%,#426f72 51%,#1c3340 82%)}
 .world-node.planet-balance .world-sphere>i{background:linear-gradient(125deg,transparent 12%,#ddfff238 25%,transparent 38% 56%,#142f3770 61%,transparent 72%);animation-direction:reverse}
 .world-node.planet-balance .world-orbit{--orbit-angle:-13deg;z-index:3;top:51px;width:145px;height:37px;border:4px double #b6eee05c;box-shadow:0 0 10px #76b9aa38}
+.world-node.planet-grow .world-sphere{width:104px;height:104px;background:radial-gradient(circle at 31% 25%,#d9f2d7 0 3%,#7daf8d 17%,#315d54 48%,#142e31 82%)}
+.world-node.planet-grow .world-sphere>i{background:radial-gradient(ellipse at 31% 39%,#bfd39b6b 0 14%,transparent 15%),radial-gradient(ellipse at 69% 61%,#a9c88b52 0 18%,transparent 19%),repeating-linear-gradient(105deg,transparent 0 14px,#e6f4e016 15px 17px,transparent 18px 28px)}
+.world-node.planet-grow .world-orbit{--orbit-angle:-9deg;top:53px;width:137px;height:54px;border-color:#b7dfbc45}
+.world-node.planet-capital .world-sphere{width:101px;height:101px;background:radial-gradient(circle at 31% 25%,#fff0b5 0 3%,#b8a06a 16%,#5d5037 46%,#1d1c20 82%)}
+.world-node.planet-capital .world-sphere>i{background:linear-gradient(35deg,transparent 0 18%,#f6da8542 19% 22%,transparent 23% 44%,#1a171c70 45% 51%,transparent 52% 70%,#ffe49330 71% 73%,transparent 74%),radial-gradient(circle at 29% 63%,#f8d97970 0 2px,transparent 3px);background-size:100% 100%,18px 18px}
+.world-node.planet-capital .world-orbit{--orbit-angle:-21deg;top:52px;width:142px;height:57px;border-color:#f3d47c4f;border-style:double}
+.world-node.stage-0 .world-sphere{filter:saturate(.38) brightness(.7);box-shadow:inset -18px -14px 25px #06091499,inset 9px 8px 15px #ffffff18,0 16px 28px #03050a82}
+.world-node.stage-0 .world-orbit{visibility:hidden}
+.world-node.stage-2 .world-sphere,.world-node.stage-3 .world-sphere{box-shadow:inset -18px -14px 25px #06091499,inset 9px 8px 15px #ffffff25,0 0 28px var(--world-glow),0 20px 30px #03050a82}
+.world-node.stage-4 .world-sphere,.world-node.stage-5 .world-sphere,.world-node.stage-6 .world-sphere{box-shadow:inset -18px -14px 25px #06091499,inset 9px 8px 15px #ffffff2d,0 0 38px var(--world-glow),0 20px 30px #03050a82}
+.world-node.stage-5 .world-orbit i,.world-node.stage-6 .world-orbit i{transform:scale(1.5);box-shadow:0 0 15px var(--world-light)}
+.world-node.active .world-sphere{outline:1px solid #ffffff8f;outline-offset:5px}
 .world-add{min-height:246px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border:0;background:none;color:#9ba5a3;font-family:Manrope}
 .world-add>i{width:86px;height:86px;display:grid;place-items:center;border:1px dashed #ffffff42;border-radius:50%;font-style:normal;box-shadow:inset 0 0 24px #ffffff08,0 0 28px #49645717}
 .world-add .icon{width:22px;height:22px}
@@ -226,13 +265,6 @@ h3{font-size:15px;margin:0}
 .product-choice div{flex:1}
 .product-choice b,.product-choice small{display:block}
 .product-choice span{font-size:11px;color:var(--moss)}
-.moon-tracker{display:flex;align-items:center;gap:12px;margin-top:14px;padding:14px;background:#ececf3;border-color:#d8d9e5}
-.moon-tracker>i{flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:linear-gradient(145deg,#aab1da,#3a416c);box-shadow:inset -6px -5px 8px #11173780}
-.moon-tracker>div{min-width:0;flex:1}
-.moon-tracker h2{font-size:14px;margin:2px 0 3px}
-.moon-tracker p:not(.eyebrow){color:var(--muted);font-size:9px;line-height:1.45}
-.moon-tracker>button{flex:0 0 auto;min-height:44px;border:0;border-radius:99px;padding:0 13px;background:var(--moon);color:#fff;font:700 10px Manrope}
-.moon-tracker.done>button{background:#ffffff80;color:var(--moon);border:1px solid #c8cada}
 .moon-insight{margin-top:12px;background:#ececf3;border-color:#d8d9e5}
 .moon-insight h2{font-size:17px;margin:5px 0 7px}
 .moon-steps{display:grid;gap:9px;margin-top:22px}

@@ -42,6 +42,28 @@ export const STACK_LIBRARY = {
       {id:'balance-breathe',title:'Замедлить дыхание',meta:'3 минуты · без таймера',period:'evening'},
       {id:'balance-checkin',title:'Оценить состояние',meta:'2 коротких вопроса',period:'evening',checkin:true}
     ]
+  },
+  GROW: {
+    code:'GROW', title:'Знания и развитие', icon:'✦', removable:true,
+    purpose:'Превращать чтение, обучение и практику в устойчивое развитие навыков.',
+    checkin:{id:'grow-checkin',eyebrow:'Итог развития',title:'Как прошло обучение?',questions:[{key:'engagement',label:'Вовлечённость'},{key:'clarity',label:'Понимание'}]},
+    actions:[
+      {id:'grow-session',title:'Позаниматься выбранным навыком',meta:'20 минут · один материал',period:'day'},
+      {id:'grow-read',title:'Прочитать запланированный объём',meta:'Книга или профессиональный материал',period:'day'},
+      {id:'grow-note',title:'Зафиксировать одну полезную мысль',meta:'Короткая заметка после занятия',period:'evening'},
+      {id:'grow-checkin',title:'Оценить обучение',meta:'2 коротких вопроса',period:'evening',checkin:true}
+    ]
+  },
+  CAPITAL: {
+    code:'CAPITAL', title:'Деньги и устойчивость', icon:'◇', removable:true,
+    purpose:'Регулярно укреплять финансовую систему через понятные действия и выбранную цель.',
+    checkin:{id:'capital-checkin',eyebrow:'Финансовый итог',title:'Насколько система под контролем?',questions:[{key:'control',label:'Контроль'},{key:'confidence',label:'Уверенность'}]},
+    actions:[
+      {id:'capital-save',title:'Отложить выбранную сумму',meta:'По своему финансовому плану',period:'day'},
+      {id:'capital-review',title:'Проверить движение к цели',meta:'Сумма · срок · следующий шаг',period:'evening'},
+      {id:'capital-record',title:'Записать изменение капитала',meta:'Одна короткая запись',period:'evening'},
+      {id:'capital-checkin',title:'Оценить финансовый контроль',meta:'2 коротких вопроса',period:'evening',checkin:true}
+    ]
   }
 };
 

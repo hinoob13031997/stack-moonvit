@@ -175,6 +175,27 @@ test('Moonvit не влияет на дисциплину и сброс дейс
   assert.equal(store.record().done.includes('sleep-moon'),true);
 });
 
+test('планета развивается по истории действий и не считает Moonvit',async()=>{
+  const action={id:'lasting-action',stackCode:'SLEEP',kind:'habit',title:'Устойчивый ритм',schedule:'daily',days:[],period:'evening',steps:[],order:0,revisions:[],createdAt:'2026-09-15',pausedAt:null,pauses:[],deletedAt:null,custom:true};
+  const records=Object.fromEntries(['2026-09-15','2026-09-16','2026-09-17','2026-09-18','2026-09-19','2026-09-20','2026-09-21'].map(date=>[date,{done:['lasting-action','sleep-moon'],checkins:{},processSteps:{}}]));
+  const store=await loadStore(baseState({moonConnected:true,customActions:[action],templateActions:['sleep-moon'],templateHistory:{'sleep-moon':[{from:'2026-09-15',to:null}]},records})),planet=store.planetProgress('SLEEP');
+  assert.equal(planet.activeDays,7);
+  assert.equal(planet.stage,3);
+  assert.equal(planet.name,'Рельеф мира');
+  assert.equal(planet.done,7);
+  assert.equal(planet.total,7);
+  assert.equal(planet.energy,100);
+});
+
+test('добавляет миры знаний и капитала без изменения старых данных',async()=>{
+  const store=await loadStore(baseState({}));
+  assert.equal(store.install('GROW'),true);
+  assert.equal(store.install('CAPITAL'),true);
+  assert.deepEqual(store.state.installed,['SLEEP','GROW','CAPITAL']);
+  assert.equal(store.stack('GROW').title,'Знания и развитие');
+  assert.equal(store.stack('CAPITAL').title,'Деньги и устойчивость');
+});
+
 test('наблюдение Moonvit сравнивает вечер с состоянием следующего утра',async()=>{
   const records={
     '2026-09-15':{done:['sleep-moon'],checkins:{},processSteps:{}},
