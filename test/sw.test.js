@@ -18,12 +18,12 @@ function workerHarness(){
 const runWait=async handler=>{let pending;handler({waitUntil:value=>{pending=value}});await pending};
 const runFetch=async(handler,request)=>{let pending;handler({request,respondWith:value=>{pending=value}});return pending?await pending:undefined};
 
-test('service worker устанавливает v41 и удаляет только старые кеши',async()=>{
+test('service worker устанавливает v42 и удаляет только старые кеши',async()=>{
   const worker=workerHarness();
   await runWait(worker.listeners.install);
   assert.equal(worker.state().skipped,true);
-  assert.ok(worker.added.includes('./src/app.js?v=41'));
-  assert.ok(worker.added.includes('./assets/planets/sleep.webp?v=41'));
+  assert.ok(worker.added.includes('./src/app.js?v=42'));
+  assert.ok(worker.added.includes('./assets/planets/sleep.webp?v=42'));
   await runWait(worker.listeners.activate);
   assert.deepEqual(worker.deleted,['stack-moonvit-shell-v30','stack-moonvit-shell-v31','stack-moonvit-shell-v32','stack-moonvit-shell-v33','stack-moonvit-shell-v34','stack-moonvit-shell-v35','stack-moonvit-shell-v36','stack-moonvit-shell-v37','stack-moonvit-shell-v38','stack-moonvit-shell-v39','stack-moonvit-shell-v40']);
   assert.equal(worker.state().claimed,true);
@@ -43,7 +43,7 @@ test('навигация обновляет оболочку из сети и о
 
 test('ресурсы берутся из кеша, а чужой origin не перехватывается',async()=>{
   const worker=workerHarness(),cached={name:'cached'};
-  const asset={method:'GET',mode:'cors',url:'https://example.test/src/app.js?v=41'};
+  const asset={method:'GET',mode:'cors',url:'https://example.test/src/app.js?v=42'};
   worker.cacheHits.set(asset.url,cached);
   assert.equal(await runFetch(worker.listeners.fetch,asset),cached);
   const external={method:'GET',mode:'cors',url:'https://fonts.example/font.woff2'};
