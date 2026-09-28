@@ -238,3 +238,54 @@ test('основной сценарий проходит от расписани
   assert.equal(store.finishExperiment('SLEEP','better'),true);
   assert.equal(store.lastExperiment('SLEEP').outcome,'better');
 });
+
+
+test('старая запись без целей мигрирует и качественная цель сохраняется без процента',async()=>{
+  const store=await loadStore(baseState({}));
+  assert.deepEqual(store.state.worldGoals,{});
+  assert.equal(store.saveWorldGoal('SLEEP',{title:' Стабилизировать режим сна ',meaning:'Быть бодрее утром',target:'',current:'',unit:'',dueDate:''}).title,'Стабилизировать режим сна');
+  assert.equal(store.worldGoal('SLEEP').target,null);
+  assert.equal(store.worldGoal('SLEEP').current,null);
+  assert.equal(store.planetProgress('SLEEP').activeDays,0);
+  assert.equal(JSON.parse(localStorage.getItem('stack-moonvit-v3')).worldGoals.SLEEP.title,'Стабилизировать режим сна');
+  const reloaded=(await import(`../src/store.js?test=${moduleIndex++}`)).store;
+  assert.equal(reloaded.worldGoal('SLEEP').meaning,'Быть бодрее утром');
+});
+
+test('числовая цель редактируется отдельно от действий и удаляется без потери истории',async()=>{
+  const store=await loadStore(baseState({installed:['SLEEP','GROW'],records:{'2026-09-21':{done:['grow-read'],checkins:{},processSteps:{}}},templateActions:['grow-read']}));
+  assert.equal(store.saveWorldGoal('GROW',{title:'Прочитать 12 книг',meaning:'',target:'12',current:'2',unit:'книг',dueDate:'2027-01-01'}).target,12);
+  assert.equal(store.saveWorldGoal('GROW',{title:'Прочитать 12 книг',target:'12',current:'13'}),false);
+  assert.equal(store.worldGoal('GROW').current,2);
+  store.saveWorldGoal('GROW',{title:'Прочитать 12 книг',target:12,current:3,unit:'книг'});
+  assert.equal(store.worldGoal('GROW').current,3);
+  assert.equal(store.deleteWorldGoal('GROW'),true);
+  assert.equal(store.worldGoal('GROW'),null);
+  assert.deepEqual(store.record().done,['grow-read']);
+});
+
+test('старая резервная копия удаляет прежние цели и Moonvit не меняет результат цели или развитие планеты',async()=>{
+  const store=await loadStore(baseState({worldGoals:{SLEEP:{title:'Режим',target:10,current:2,unit:'дней'}}}));
+  const old=baseState({records:{'2026-09-21':{done:[],checkins:{},processSteps:{}}}});
+  assert.equal(store.restore({format:'STACK_MOONVIT_BACKUP',version:2,state:old}),true);
+  assert.deepEqual(store.state.worldGoals,{});
+  store.saveWorldGoal('SLEEP',{title:'Режим',target:10,current:2});
+  const before=store.planetProgress('SLEEP');
+  store.setMoonvit(true);
+  store.toggle('sleep-moon');
+  assert.deepEqual(store.planetProgress('SLEEP'),before);
+  assert.equal(store.worldGoal('SLEEP').current,2);
+  assert.equal(store.backup().state.worldGoals.SLEEP.title,'Режим');
+});
+
+
+test('восстановление нормализует цели и не принимает посторонние миры или неверные числа',async()=>{
+  const store=await loadStore(baseState({}));
+  const incoming=baseState({installed:['SLEEP','GROW'],worldGoals:{SLEEP:{title:'Спокойный режим',target:'',current:'',unit:'%'},GROW:{title:'12 книг',target:'12',current:'4',unit:'книг',dueDate:'2027-01-01'},TRAIN:{title:'Испорчено',target:-3,current:5},UNKNOWN:{title:'Неизвестно'}}});
+  assert.equal(store.restore({format:'STACK_MOONVIT_BACKUP',version:3,state:incoming}),true);
+  assert.equal(store.worldGoal('SLEEP').target,null);
+  assert.equal(store.worldGoal('SLEEP').unit,'');
+  assert.equal(store.worldGoal('GROW').current,4);
+  assert.equal(store.worldGoal('TRAIN'),null);
+  assert.equal(store.worldGoal('UNKNOWN'),null);
+});

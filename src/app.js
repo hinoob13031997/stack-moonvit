@@ -1,5 +1,5 @@
-import {store} from './store.js?v=42';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,moonvitModal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal} from './ui.js?v=42';
+import {store} from './store.js?v=43';
+import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,moonvitModal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal,worldGoalModal} from './ui.js?v=43';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast'),updateBanner=document.querySelector('#updateBanner');
 const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
@@ -41,6 +41,9 @@ document.addEventListener('click',event=>{
   const remove=target.closest('[data-remove]');if(remove){event.stopPropagation();modal(`<p class="eyebrow">Удаление</p><h2>Удалить ${remove.dataset.remove} STACK?</h2><p class="subtitle">Сохранённые отметки останутся в истории.</p><button class="danger" data-confirm-remove="${remove.dataset.remove}">Удалить стек</button>`);return}
   const confirmRemove=target.closest('[data-confirm-remove]');if(confirmRemove){store.remove(confirmRemove.dataset.confirmRemove);confirmRemove.closest('.modal-wrap').remove();render('stacks');toast('Стек удалён');return}
   const manage=target.closest('[data-manage]');if(manage){event.stopPropagation();manageStackModal(manage.dataset.manage);return}
+  const editWorldGoal=target.closest('[data-edit-world-goal]');if(editWorldGoal){editWorldGoal.closest('.modal-wrap')?.remove();worldGoalModal(editWorldGoal.dataset.editWorldGoal);return}
+  const saveWorldGoal=target.closest('[data-save-world-goal]');if(saveWorldGoal){const input={title:document.querySelector('#worldGoalTitle').value,meaning:document.querySelector('#worldGoalMeaning').value,target:document.querySelector('#worldGoalTarget').value,current:document.querySelector('#worldGoalCurrent').value,unit:document.querySelector('#worldGoalUnit').value,dueDate:document.querySelector('#worldGoalDue').value};if(input.target.trim()&&!input.current.trim())input.current='0';if(!input.target.trim()){input.current='';input.unit=''};const saved=store.saveWorldGoal(saveWorldGoal.dataset.saveWorldGoal,input);if(!saved){document.querySelector('[data-world-goal-error]')?.classList.remove('hidden');return}saveWorldGoal.closest('.modal-wrap').remove();render(currentView);toast('Цель мира сохранена');return}
+  const deleteWorldGoal=target.closest('[data-delete-world-goal]');if(deleteWorldGoal){store.deleteWorldGoal(deleteWorldGoal.dataset.deleteWorldGoal);deleteWorldGoal.closest('.modal-wrap').remove();render(currentView);toast('Цель удалена');return}
   const actionMenu=target.closest('[data-action-menu]');if(actionMenu){actionMenu.closest('.modal-wrap').remove();actionMenuModal(actionMenu.dataset.actionMenu);return}
   const openTemplates=target.closest('[data-open-templates]');if(openTemplates){openTemplates.closest('.modal-wrap').remove();templatesModal(openTemplates.dataset.openTemplates);return}
   const backManage=target.closest('[data-back-manage]');if(backManage){backManage.closest('.modal-wrap').remove();manageStackModal(backManage.dataset.backManage);return}
@@ -88,4 +91,4 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncCalend
 window.setInterval(syncCalendarDay,30000);
 window.addEventListener('online',()=>{if(currentView==='profile')render('profile');toast('Соединение восстановлено')});
 window.addEventListener('offline',()=>{if(currentView==='profile')render('profile');toast('Офлайн-режим: данные сохраняются')});
-if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=42').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
+if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=43').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
