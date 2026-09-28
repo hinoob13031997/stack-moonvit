@@ -1,11 +1,11 @@
-import {STACK_LIBRARY,TODAY,formatDay,longToday} from './data.js?v=43';
-import {store} from './store.js?v=43';
+import {STACK_LIBRARY,TODAY,formatDay,longToday} from './data.js?v=43.1';
+import {store} from './store.js?v=43.1';
 
-const APP_VERSION='43';
+const APP_VERSION='43.1';
 const header=(title,subtitle)=>`<header class="topbar"><div class="brand">STACK <span>× MOONVIT</span></div><button class="avatar" data-view="profile" aria-label="Открыть профиль">${icon('user')}</button></header><p class="eyebrow">${longToday()}</p><h1>${title}</h1><p class="subtitle">${subtitle}</p>`;
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const icon=(name,className='')=>`<svg class="icon ${className}" aria-hidden="true"><use href="#icon-${name}"/></svg>`;
-const planetArt=code=>`<img class="planet-art" src="assets/planets/${code.toLowerCase()}.webp?v=43" alt="" draggable="false">`;
+const planetArt=code=>`<img class="planet-art" src="assets/planets/${code.toLowerCase()}.webp?v=43.1" alt="" draggable="false">`;
 const stackIcon=code=>icon(({SLEEP:'sleep',FOCUS:'focus',TRAIN:'train',BALANCE:'balance',GROW:'grow',CAPITAL:'capital'})[code]||'layers','stack-icon');
 const periodName={morning:'Утро',day:'День',evening:'Вечер'};
 const periodOrder=['morning','day','evening'];
