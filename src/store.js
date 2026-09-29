@@ -1,4 +1,4 @@
-import {STACK_LIBRARY,TODAY} from './data.js?v=44';
+import {STACK_LIBRARY,TODAY} from './data.js?v=44.1';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
@@ -77,7 +77,7 @@ class StackStore{
     if(prior){const retained=new Set(program.stages.flatMap(stage=>stage.days.map(day=>day.id)));program.history=[...program.history,...Object.entries(prior.completed).filter(([id])=>!retained.has(id)).map(([,record])=>record)].slice(-100);}
     this.state.trainProgram=program;this.save();return program;
   }
-  completeTrainDay(id){const progress=this.trainProgramProgress(),day=progress?.next;if(!day||day.id!==id)return false;progress.program.completed[id]={date:TODAY(),title:day.title,type:day.type,stageTitle:day.stageTitle};this.save();return true}
+  completeTrainDay(id){const progress=this.trainProgramProgress(),day=progress?.next;if(!day||day.id!==id||Object.values(progress.program.completed).some(record=>record.date===TODAY()))return false;progress.program.completed[id]={date:TODAY(),title:day.title,type:day.type,stageTitle:day.stageTitle};this.save();return true}
   undoTrainDay(){const progress=this.trainProgramProgress(),last=progress?.days.filter(day=>progress.program.completed[day.id]).at(-1);if(!last)return false;delete progress.program.completed[last.id];this.save();return true}
   deleteTrainProgram(){const program=this.trainProgram();if(!program)return false;this.state.trainProgramHistory=[...(this.state.trainProgramHistory||[]),...Object.values(program.completed),...program.history].slice(-100);this.state.trainProgram=null;this.save();return true}
   record(date=TODAY()){if(date===TODAY())this.ensureToday(date);return this.state.records[date]||null}

@@ -307,6 +307,8 @@ test('программа TRAIN проходит этапы, тренировку
   assert.equal(store.completeTrainDay('unknown'),false);
   assert.equal(store.completeTrainDay(first.id),true);
   assert.equal(store.trainProgramProgress().next.type,'recovery');
+  assert.equal(store.completeTrainDay(store.trainProgramProgress().next.id),false);
+  now='2026-09-22T12:00:00Z';store.syncDay();
   assert.equal(store.completeTrainDay(store.trainProgramProgress().next.id),true);
   assert.equal(store.trainProgramProgress().next.stageTitle,'Второй этап');
   assert.equal(store.trainProgramProgress().done,2);
