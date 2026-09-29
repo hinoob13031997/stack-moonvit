@@ -289,3 +289,59 @@ test('восстановление нормализует цели и не пр�
   assert.equal(store.worldGoal('TRAIN'),null);
   assert.equal(store.worldGoal('UNKNOWN'),null);
 });
+
+test('старая запись и резервная копия без программы TRAIN остаются совместимыми',async()=>{
+  const store=await loadStore(baseState({installed:['SLEEP','TRAIN']}));
+  assert.equal(store.trainProgram(),null);
+  assert.equal(store.trainProgramProgress(),null);
+  assert.equal(store.restore({format:'STACK_MOONVIT_BACKUP',version:3,state:baseState({installed:['SLEEP','TRAIN']})}),true);
+  assert.equal(store.trainProgram(),null);
+  assert.deepEqual(store.state.trainProgramHistory,[]);
+});
+
+test('программа TRAIN проходит этапы, тренировку и восстановление отдельно от дисциплины',async()=>{
+  const store=await loadStore(baseState({installed:['SLEEP','TRAIN'],worldGoals:{TRAIN:{title:'24 тренировки',target:24,current:0,unit:'тренировок'}}}));
+  const program=store.saveTrainProgram({title:'Спокойный старт',stages:[{title:'Первый этап',days:[{title:'Движение',type:'training',note:'Умеренная нагрузка'},{title:'Восстановление',type:'recovery'}]},{title:'Второй этап',days:[{title:'Силовая',type:'training'}]}]});
+  assert.ok(program);
+  const first=store.trainProgramProgress().next;
+  assert.equal(store.completeTrainDay('unknown'),false);
+  assert.equal(store.completeTrainDay(first.id),true);
+  assert.equal(store.trainProgramProgress().next.type,'recovery');
+  assert.equal(store.completeTrainDay(store.trainProgramProgress().next.id),true);
+  assert.equal(store.trainProgramProgress().next.stageTitle,'Второй этап');
+  assert.equal(store.trainProgramProgress().done,2);
+  assert.equal(store.planetProgress('TRAIN').activeDays,0);
+  assert.equal(store.discipline('TRAIN'),0);
+  assert.equal(store.worldGoal('TRAIN').current,0);
+  store.setMoonvit(true);store.toggle('sleep-moon');
+  assert.equal(store.trainProgramProgress().done,2);
+  assert.equal(store.planetProgress('TRAIN').activeDays,0);
+  assert.equal(store.undoTrainDay(),true);
+  assert.equal(store.trainProgramProgress().next.type,'recovery');
+});
+
+test('редактирование программы сохраняет ID и снимок пройденного дня, удаление архивирует отметки',async()=>{
+  const store=await loadStore(baseState({installed:['SLEEP','TRAIN']}));
+  const first=store.saveTrainProgram({title:'План',stages:[{title:'Этап 1',days:[{title:'Тренировка А',type:'training'},{title:'Пауза',type:'recovery'}]}]});
+  const stage=first.stages[0],day=stage.days[0];
+  store.completeTrainDay(day.id);
+  const edited=store.saveTrainProgram({title:'План уточнён',stages:[{id:stage.id,title:'Этап 1 обновлён',days:[{id:day.id,title:'Тренировка А+',type:'training'},{id:stage.days[1].id,title:'Пауза',type:'recovery'}]}]});
+  assert.equal(edited.completed[day.id].title,'Тренировка А');
+  assert.equal(edited.completed[day.id].stageTitle,'Этап 1');
+  assert.equal(store.trainProgramProgress().done,1);
+  assert.equal(store.backup().state.trainProgram.completed[day.id].title,'Тренировка А');
+  assert.equal(store.deleteTrainProgram(),true);
+  assert.equal(store.trainProgram(),null);
+  assert.equal(store.state.trainProgramHistory.at(-1).title,'Тренировка А');
+});
+
+test('восстановление программы отбрасывает повреждённые этапы и лишние отметки',async()=>{
+  const store=await loadStore(baseState({installed:['SLEEP','TRAIN']}));
+  const incoming=baseState({installed:['SLEEP','TRAIN'],trainProgram:{id:'plan',title:'План',stages:[{id:'stage',title:'Старт',days:[{id:'day',title:'Сессия',type:'training'}]}],completed:{day:{date:'2026-09-20',title:'Сессия',type:'training',stageTitle:'Старт'},unknown:{date:'2026-09-19',title:'Лишнее'}}}});
+  assert.equal(store.restore({format:'STACK_MOONVIT_BACKUP',version:4,state:incoming}),true);
+  assert.equal(store.trainProgramProgress().done,1);
+  assert.equal(store.trainProgram().completed.unknown,undefined);
+  incoming.trainProgram.stages[0].days[0].type='invalid';
+  assert.equal(store.restore({state:incoming}),true);
+  assert.equal(store.trainProgram(),null);
+});

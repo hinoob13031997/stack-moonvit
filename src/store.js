@@ -1,4 +1,4 @@
-import {STACK_LIBRARY,TODAY} from './data.js?v=43.2';
+import {STACK_LIBRARY,TODAY} from './data.js?v=44';
 
 const KEY='stack-moonvit-v3';
 const emptyRecord=()=>({done:[],checkins:{},processSteps:{}});
@@ -19,6 +19,29 @@ const normalizeWorldGoal=value=>{
   return {title,meaning,target,current:target===null?null:current,unit:target===null?'':unit,dueDate};
 };
 const normalizeWorldGoals=value=>isObject(value)?Object.fromEntries(Object.entries(value).filter(([code])=>STACK_LIBRARY[code]).map(([code,goal])=>[code,normalizeWorldGoal(goal)]).filter(([,goal])=>goal)):{};
+const trainId=()=>`train-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
+const normalizeTrainProgram=(value,previous=null)=>{
+  if(!isObject(value)||!Array.isArray(value.stages)||!value.stages.length||value.stages.length>6)return null;
+  const title=String(value.title||'').trim().slice(0,80),seen=new Set(),oldIds=new Set(previous?.stages.flatMap(stage=>[stage.id,...stage.days.map(day=>day.id)])||[]);
+  if(!title)return null;
+  const stages=[];
+  for(const raw of value.stages){
+    if(!isObject(raw)||!Array.isArray(raw.days)||!raw.days.length||raw.days.length>12)return null;
+    const stageTitle=String(raw.title||'').trim().slice(0,80),stageId=typeof raw.id==='string'&&raw.id.trim()&&(oldIds.has(raw.id)||!previous)?raw.id:trainId();
+    if(!stageTitle||seen.has(stageId))return null;seen.add(stageId);
+    const days=[];
+    for(const item of raw.days){
+      const dayTitle=String(item?.title||'').trim().slice(0,80),id=typeof item?.id==='string'&&item.id.trim()&&(oldIds.has(item.id)||!previous)?item.id:trainId();
+      if(!dayTitle||seen.has(id)||!['training','recovery'].includes(item?.type))return null;
+      seen.add(id);days.push({id,title:dayTitle,type:item.type,note:String(item?.note||'').trim().slice(0,120)});
+    }
+    stages.push({id:stageId,title:stageTitle,days});
+  }
+  if(stages.reduce((sum,stage)=>sum+stage.days.length,0)>36)return null;
+  const ids=new Set(stages.flatMap(stage=>stage.days.map(day=>day.id))),source=isObject(value.completed)?value.completed:{},completed=Object.create(null);
+  for(const [id,record] of Object.entries(source))if(ids.has(id)&&isObject(record)&&/^\d{4}-\d{2}-\d{2}$/.test(record.date||''))completed[id]={date:record.date,title:String(record.title||'').slice(0,80),type:record.type==='recovery'?'recovery':'training',stageTitle:String(record.stageTitle||'').slice(0,80)};
+  return {id:previous?.id||String(value.id||trainId()),title,stages,completed,history:Array.isArray(value.history)?value.history.filter(isObject).slice(-100):[]};
+};
 const normalizeSnapshot=(snapshot,action,index)=>{const source=isObject(snapshot)?snapshot:{},schedule=['daily','weekdays','custom'].includes(source.schedule)?source.schedule:action.schedule,period=['morning','day','evening'].includes(source.period)?source.period:action.period;return {stackCode:STACK_LIBRARY[source.stackCode]?source.stackCode:action.stackCode,title:String(source.title||action.title||'').trim().slice(0,80),schedule,days:normalizeDays(source.days??action.days),period,steps:normalizeSteps(source.steps??action.steps,action.id,`revision-${index}-step`),order:Number.isFinite(source.order)?source.order:action.order}};
 const normalizeAction=(value,index=0)=>{if(!isObject(value)||!value.id)return null;const action={...value,id:String(value.id),title:String(value.title||'').trim().slice(0,80),kind:value.kind==='process'?'process':'habit',period:['morning','day','evening'].includes(value.period)?value.period:'day',schedule:['daily','weekdays','custom'].includes(value.schedule)?value.schedule:'daily',days:normalizeDays(value.days),steps:normalizeSteps(value.steps,value.id),pauses:Array.isArray(value.pauses)?value.pauses.filter(isObject):[],order:Number.isFinite(value.order)?value.order:index,revisions:[],createdAt:value.createdAt||TODAY()};action.revisions=Array.isArray(value.revisions)?value.revisions.map((revision,revisionIndex)=>isObject(revision)&&typeof revision.from==='string'&&typeof revision.to==='string'?{...revision,snapshot:normalizeSnapshot(revision.snapshot,action,revisionIndex)}:null).filter(Boolean):[];return action};
 
@@ -31,12 +54,12 @@ function normalizeRecord(value={}){
 
 function migrate(){
   const current=safeParse(localStorage.getItem(KEY)||'null');
-  if(isObject(current)){current.worldGoals=normalizeWorldGoals(current.worldGoals);current.ownerName=String(current.ownerName||'').trim().slice(0,40);current.records=Object.fromEntries(Object.entries(isObject(current.records)?current.records:{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=isObject(current.experiments)?current.experiments:{};current.experimentHistory=isObject(current.experimentHistory)?current.experimentHistory:{};current.weeklyReviews=Array.isArray(current.weeklyReviews)?current.weeklyReviews:[];current.customActions=Array.isArray(current.customActions)?current.customActions.map(normalizeAction).filter(Boolean):[];current.todayHintDismissed=Boolean(current.todayHintDismissed);current.templateActions=Array.isArray(current.templateActions)?current.templateActions:[];current.templateHistory=normalizeTemplateHistory(current.templateHistory);current.templateActions.forEach(id=>{const history=current.templateHistory[id]||[];if(!history.some(period=>!period.to))history.push({from:TODAY(),to:null});current.templateHistory[id]=history});current.installed=Array.isArray(current.installed)?current.installed.filter((code,index,items)=>STACK_LIBRARY[code]&&items.indexOf(code)===index):['SLEEP'];if(!current.installed.includes('SLEEP'))current.installed.unshift('SLEEP');if(!current.installed.includes(current.activeStack))current.activeStack='SLEEP';return current}
+  if(isObject(current)){current.worldGoals=normalizeWorldGoals(current.worldGoals);current.trainProgram=normalizeTrainProgram(current.trainProgram);current.trainProgramHistory=Array.isArray(current.trainProgramHistory)?current.trainProgramHistory.filter(isObject).slice(-100):[];current.ownerName=String(current.ownerName||'').trim().slice(0,40);current.records=Object.fromEntries(Object.entries(isObject(current.records)?current.records:{}).map(([date,record])=>[date,normalizeRecord(record)]));current.experiments=isObject(current.experiments)?current.experiments:{};current.experimentHistory=isObject(current.experimentHistory)?current.experimentHistory:{};current.weeklyReviews=Array.isArray(current.weeklyReviews)?current.weeklyReviews:[];current.customActions=Array.isArray(current.customActions)?current.customActions.map(normalizeAction).filter(Boolean):[];current.todayHintDismissed=Boolean(current.todayHintDismissed);current.templateActions=Array.isArray(current.templateActions)?current.templateActions:[];current.templateHistory=normalizeTemplateHistory(current.templateHistory);current.templateActions.forEach(id=>{const history=current.templateHistory[id]||[];if(!history.some(period=>!period.to))history.push({from:TODAY(),to:null});current.templateHistory[id]=history});current.installed=Array.isArray(current.installed)?current.installed.filter((code,index,items)=>STACK_LIBRARY[code]&&items.indexOf(code)===index):['SLEEP'];if(!current.installed.includes('SLEEP'))current.installed.unshift('SLEEP');if(!current.installed.includes(current.activeStack))current.activeStack='SLEEP';return current}
   const oldValue=safeParse(localStorage.getItem('stack-moonvit-v2')||localStorage.getItem('stack-moonvit-v1')||'{}'),old=isObject(oldValue)?oldValue:{},oldStacks=Array.isArray(old.stacks)?old.stacks:[];
   const installed=['SLEEP',...oldStacks.map(stack=>stack?.code)].filter((code,index,items)=>items.indexOf(code)===index&&STACK_LIBRARY[code]);
   const records=Object.fromEntries(Object.entries(isObject(old.records)?old.records:{}).map(([date,record])=>[date,normalizeRecord(record)]));
   if(!records[TODAY()])records[TODAY()]=normalizeRecord({done:old.done||[],sleep:null,energy:null});
-  return {onboarded:Boolean(old.onboarded),ownerName:String(old.ownerName||old.name||'').trim().slice(0,40),goal:old.goal||'SLEEP',worldGoals:{},moonConnected:Boolean(old.moonConnected),activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},weeklyReviews:[],customActions:[],templateActions:[],templateHistory:{},todayHintDismissed:false,onboardingStep:0};
+  return {onboarded:Boolean(old.onboarded),ownerName:String(old.ownerName||old.name||'').trim().slice(0,40),goal:old.goal||'SLEEP',worldGoals:{},trainProgram:null,trainProgramHistory:[],moonConnected:Boolean(old.moonConnected),activeStack:old.activeStack||'SLEEP',installed,records,experiments:{},experimentHistory:{},weeklyReviews:[],customActions:[],templateActions:[],templateHistory:{},todayHintDismissed:false,onboardingStep:0};
 }
 
 class StackStore{
@@ -48,6 +71,15 @@ class StackStore{
   worldGoal(code=this.state.activeStack){return this.state.worldGoals[code]||null}
   saveWorldGoal(code,input){if(!this.state.installed.includes(code))return false;const goal=normalizeWorldGoal(input);if(!goal)return false;this.state.worldGoals[code]=goal;this.save();return goal}
   deleteWorldGoal(code){if(!this.state.worldGoals[code])return false;delete this.state.worldGoals[code];this.save();return true}
+  trainProgram(){return this.state.trainProgram||null}
+  trainProgramProgress(){const program=this.trainProgram();if(!program)return null;const days=program.stages.flatMap((stage,index)=>stage.days.map((day,position)=>({...day,stageId:stage.id,stageTitle:stage.title,stageIndex:index,position}))),done=days.filter(day=>program.completed[day.id]);return {program,days,done:done.length,total:days.length,next:days.find(day=>!program.completed[day.id])||null};}
+  saveTrainProgram(input){if(!this.state.installed.includes('TRAIN'))return false;const prior=this.trainProgram(),program=normalizeTrainProgram({...input,completed:prior?.completed||{},history:prior?.history||[]},prior);if(!program)return false;
+    if(prior){const retained=new Set(program.stages.flatMap(stage=>stage.days.map(day=>day.id)));program.history=[...program.history,...Object.entries(prior.completed).filter(([id])=>!retained.has(id)).map(([,record])=>record)].slice(-100);}
+    this.state.trainProgram=program;this.save();return program;
+  }
+  completeTrainDay(id){const progress=this.trainProgramProgress(),day=progress?.next;if(!day||day.id!==id)return false;progress.program.completed[id]={date:TODAY(),title:day.title,type:day.type,stageTitle:day.stageTitle};this.save();return true}
+  undoTrainDay(){const progress=this.trainProgramProgress(),last=progress?.days.filter(day=>progress.program.completed[day.id]).at(-1);if(!last)return false;delete progress.program.completed[last.id];this.save();return true}
+  deleteTrainProgram(){const program=this.trainProgram();if(!program)return false;this.state.trainProgramHistory=[...(this.state.trainProgramHistory||[]),...Object.values(program.completed),...program.history].slice(-100);this.state.trainProgram=null;this.save();return true}
   record(date=TODAY()){if(date===TODAY())this.ensureToday(date);return this.state.records[date]||null}
   stack(code=this.state.activeStack){return STACK_LIBRARY[code]||STACK_LIBRARY.SLEEP}
   actions(code=this.state.activeStack,date=TODAY(),options={}){const record=this.record(date),includeRecorded=options.includeRecorded??date!==TODAY(),base=this.stack(code).actions.filter(action=>!action.checkin&&(this.templateScheduled(action.id,date)||includeRecorded&&record?.done.includes(action.id))&&(includeRecorded||this.state.moonConnected||!action.product));const custom=this.state.customActions.map(action=>this.actionAt(action,date,includeRecorded)).filter(action=>action&&action.stackCode===code&&this.isScheduled(action,date,includeRecorded)).sort((a,b)=>(a.order??0)-(b.order??0));return [...base,...custom]}
@@ -182,14 +214,14 @@ class StackStore{
     const available=dates.filter(date=>date<=today),done=available.filter(date=>this.record(date)?.done.includes(action.id)).length;
     return {...saved,action,dates,elapsed:available.length,done,complete:today>=dates[2]};
   }
-  backup(){return {format:'STACK_MOONVIT_BACKUP',version:3,exportedAt:new Date().toISOString(),state:JSON.parse(JSON.stringify(this.state))}}
+  backup(){return {format:'STACK_MOONVIT_BACKUP',version:4,exportedAt:new Date().toISOString(),state:JSON.parse(JSON.stringify(this.state))}}
   restore(payload){
     const incoming=payload?.format==='STACK_MOONVIT_BACKUP'?payload.state:payload?.state;
     if(!isObject(incoming)||!isObject(incoming.records)||Object.values(incoming.records).some(record=>!isObject(record))||!Array.isArray(incoming.installed))return false;
     const installed=incoming.installed.filter((code,index,items)=>STACK_LIBRARY[code]&&items.indexOf(code)===index);if(!installed.includes('SLEEP'))installed.unshift('SLEEP');
     const templateActions=Array.isArray(incoming.templateActions)?incoming.templateActions:[],templateHistory=normalizeTemplateHistory(incoming.templateHistory);
     templateActions.forEach(id=>{const history=templateHistory[id]||[];if(!history.some(period=>!period.to))history.push({from:TODAY(),to:null});templateHistory[id]=history});
-    this.state={...this.state,...incoming,worldGoals:normalizeWorldGoals(incoming.worldGoals),ownerName:String(incoming.ownerName||'').trim().replace(/\s+/g,' ').slice(0,40),installed,activeStack:installed.includes(incoming.activeStack)?incoming.activeStack:'SLEEP',records:Object.fromEntries(Object.entries(incoming.records).map(([date,record])=>[date,normalizeRecord(record)])),experiments:isObject(incoming.experiments)?incoming.experiments:{},experimentHistory:isObject(incoming.experimentHistory)?incoming.experimentHistory:{},weeklyReviews:Array.isArray(incoming.weeklyReviews)?incoming.weeklyReviews:[],customActions:Array.isArray(incoming.customActions)?incoming.customActions.map(normalizeAction).filter(Boolean):[],templateActions,templateHistory};
+    this.state={...this.state,...incoming,worldGoals:normalizeWorldGoals(incoming.worldGoals),trainProgram:normalizeTrainProgram(incoming.trainProgram),trainProgramHistory:Array.isArray(incoming.trainProgramHistory)?incoming.trainProgramHistory.filter(isObject).slice(-100):[],ownerName:String(incoming.ownerName||'').trim().replace(/\s+/g,' ').slice(0,40),installed,activeStack:installed.includes(incoming.activeStack)?incoming.activeStack:'SLEEP',records:Object.fromEntries(Object.entries(incoming.records).map(([date,record])=>[date,normalizeRecord(record)])),experiments:isObject(incoming.experiments)?incoming.experiments:{},experimentHistory:isObject(incoming.experimentHistory)?incoming.experimentHistory:{},weeklyReviews:Array.isArray(incoming.weeklyReviews)?incoming.weeklyReviews:[],customActions:Array.isArray(incoming.customActions)?incoming.customActions.map(normalizeAction).filter(Boolean):[],templateActions,templateHistory};
     this.day=TODAY();this.ensureToday();this.save();return true;
   }
 }
