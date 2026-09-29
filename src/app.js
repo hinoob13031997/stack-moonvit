@@ -1,11 +1,11 @@
-import {store} from './store.js?v=44.1';
-import {todayView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,moonvitModal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal,worldGoalModal,trainProgramModal,trainProgramEditor,trainStageEditor,trainDayEditor} from './ui.js?v=44.1';
+import {store} from './store.js?v=45';
+import {todayView,worldView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,moonvitModal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal,worldGoalModal,trainProgramModal,trainProgramEditor,trainStageEditor,trainDayEditor} from './ui.js?v=45';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast'),updateBanner=document.querySelector('#updateBanner');
-const views={today:todayView,stacks:stacksView,insights:insightsView,profile:profileView};
-let currentView='today',toastTimer,swRegistration=null;
+const views={today:todayView,world:worldView,stacks:stacksView,insights:insightsView,profile:profileView};
+let currentView='today',toastTimer,swRegistration=null,transitioning=false;
 
-function render(view=currentView){currentView=view;app.innerHTML=views[view]();nav.classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(button=>button.classList.toggle('active',button.dataset.view===view));window.scrollTo(0,0)}
+function render(view=currentView){currentView=view;app.innerHTML=views[view]();nav.classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(button=>button.classList.toggle('active',button.dataset.view===(view==='world'?'today':view)));window.scrollTo(0,0)}
 function renderOnboarding(){app.innerHTML=onboardingView();nav.classList.add('hidden')}
 function toast(text){clearTimeout(toastTimer);toastEl.textContent=text;toastEl.classList.add('show');toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1700)}
 function syncCalendarDay(){if(!store.syncDay())return false;document.querySelectorAll('.modal-wrap').forEach(item=>item.remove());store.state.onboarded?render():renderOnboarding();toast('Начался новый день');return true}
@@ -22,6 +22,9 @@ document.addEventListener('click',event=>{
   if(target.closest('[data-reload-update]')){window.location.reload();return}
   if(target.matches('.modal-wrap')){target.remove();return}
   const view=target.closest('[data-view]');if(view){render(view.dataset.view);return}
+  const expand=target.closest('[data-expand-world]');if(expand){store.activate(expand.dataset.expandWorld);render('today');document.querySelector(`[data-world-card="${expand.dataset.expandWorld}"]`)?.scrollIntoView({block:'start',behavior:'smooth'});return}
+  const enter=target.closest('[data-enter-world]');if(enter){if(transitioning)return;transitioning=true;const art=enter.closest('.planet-hero')?.querySelector('.planet-body img'),rect=art?.getBoundingClientRect(),reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;if(!rect||reduced){render('world');transitioning=false;return}const veil=document.createElement('div');veil.className='world-transition';const image=art.cloneNode(true);image.className='world-transition-art';Object.assign(image.style,{left:`${rect.left}px`,top:`${rect.top}px`,width:`${rect.width}px`,height:`${rect.height}px`});veil.append(image);document.body.append(veil);Promise.all([veil.animate([{backgroundColor:'rgba(9,14,25,0)'},{backgroundColor:'rgba(9,14,25,.97)'}],{duration:570,fill:'forwards',easing:'ease-in'}).finished,image.animate([{transform:'scale(1)',opacity:1},{transform:'scale(3.3)',opacity:.72}],{duration:570,fill:'forwards',easing:'cubic-bezier(.18,.65,.25,1)'}).finished]).then(()=>{render('world');veil.remove();transitioning=false}).catch(()=>{veil.remove();render('world');transitioning=false});return}
+  if(target.closest('[data-back-today]')){render('today');return}
   const goal=target.closest('[data-goal]');if(goal){store.state.goal=goal.dataset.goal;store.save();renderOnboarding();return}
   if(target.closest('[data-owner-next]')){store.setOwnerName(document.querySelector('#ownerName')?.value);store.state.onboardingStep=1;store.save();renderOnboarding();return}
   if(target.closest('[data-next]')){store.state.onboardingStep=2;store.save();renderOnboarding();return}
@@ -104,4 +107,4 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncCalend
 window.setInterval(syncCalendarDay,30000);
 window.addEventListener('online',()=>{if(currentView==='profile')render('profile');toast('Соединение восстановлено')});
 window.addEventListener('offline',()=>{if(currentView==='profile')render('profile');toast('Офлайн-режим: данные сохраняются')});
-if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=44.1').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
+if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=45').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
