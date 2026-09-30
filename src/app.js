@@ -1,14 +1,14 @@
-import {store} from './store.js?v=45.1';
-import {todayView,worldView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,moonvitModal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal,worldGoalModal,trainProgramModal,trainProgramEditor,trainStageEditor,trainDayEditor} from './ui.js?v=45.1';
+import {store} from './store.js?v=46';
+import {todayView,worldView,checkinCompleteView,stacksView,insightsView,profileView,onboardingView,checkinModal,builderModal,dayModal,weeklyReviewModal,experimentResultModal,modal,moonvitModal,manageStackModal,actionMenuModal,templatesModal,customActionModal,processModal,worldGoalModal,trainProgramModal,trainProgramEditor,trainStageEditor,trainDayEditor} from './ui.js?v=46';
 
 const app=document.querySelector('#app'),nav=document.querySelector('.bottom-nav'),toastEl=document.querySelector('#toast'),updateBanner=document.querySelector('#updateBanner');
-const views={today:todayView,world:worldView,stacks:stacksView,insights:insightsView,profile:profileView};
-let currentView='today',toastTimer,swRegistration=null,transitioning=false;
+const views={today:todayView,world:worldView,complete:()=>checkinCompleteView(savedCheckinCode,checkinWasUpdated),stacks:stacksView,insights:insightsView,profile:profileView};
+let currentView='today',toastTimer,swRegistration=null,transitioning=false,savedCheckinCode=store.state.activeStack,checkinWasUpdated=false;
 
-function render(view=currentView){currentView=view;app.innerHTML=views[view]();nav.classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(button=>button.classList.toggle('active',button.dataset.view===(view==='world'?'today':view)));window.scrollTo(0,0)}
+function render(view=currentView){currentView=view;app.innerHTML=views[view]();nav.classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(button=>button.classList.toggle('active',button.dataset.view===(['world','complete'].includes(view)?'today':view)));window.scrollTo(0,0);if(view==='complete')document.querySelector('#checkinCompleteTitle')?.focus({preventScroll:true})}
 function renderOnboarding(){app.innerHTML=onboardingView();nav.classList.add('hidden')}
 function toast(text){clearTimeout(toastTimer);toastEl.textContent=text;toastEl.classList.add('show');toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1700)}
-function syncCalendarDay(){if(!store.syncDay())return false;document.querySelectorAll('.modal-wrap').forEach(item=>item.remove());store.state.onboarded?render():renderOnboarding();toast('Начался новый день');return true}
+function syncCalendarDay(){if(!store.syncDay())return false;document.querySelectorAll('.modal-wrap').forEach(item=>item.remove());store.state.onboarded?render(currentView==='complete'?'today':currentView):renderOnboarding();toast('Начался новый день');return true}
 function syncViewport(){document.documentElement.style.setProperty('--visual-viewport-height',`${window.visualViewport?.height||window.innerHeight}px`)}
 function completeOnboarding(){store.install(store.state.goal);store.state.activeStack=store.state.goal;store.state.onboarded=true;store.state.onboardingStep=0;store.save();render('stacks')}
 
@@ -25,6 +25,7 @@ document.addEventListener('click',event=>{
   const expand=target.closest('[data-expand-world]');if(expand){store.activate(expand.dataset.expandWorld);render('today');document.querySelector(`[data-world-card="${expand.dataset.expandWorld}"]`)?.scrollIntoView({block:'start',behavior:'smooth'});return}
   const enter=target.closest('[data-enter-world]');if(enter){if(transitioning)return;transitioning=true;const art=enter.closest('.planet-hero')?.querySelector('.planet-body img'),rect=art?.getBoundingClientRect(),reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;if(!rect||reduced){render('world');transitioning=false;return}const veil=document.createElement('div');veil.className='world-transition';const image=art.cloneNode(true);image.className='world-transition-art';Object.assign(image.style,{left:`${rect.left}px`,top:`${rect.top}px`,width:`${rect.width}px`,height:`${rect.height}px`});veil.append(image);document.body.append(veil);Promise.all([veil.animate([{backgroundColor:'rgba(9,14,25,0)'},{backgroundColor:'rgba(9,14,25,.97)'}],{duration:570,fill:'forwards',easing:'ease-in'}).finished,image.animate([{transform:'scale(1)',opacity:1},{transform:'scale(3.3)',opacity:.72}],{duration:570,fill:'forwards',easing:'cubic-bezier(.18,.65,.25,1)'}).finished]).then(()=>{render('world');veil.remove();transitioning=false}).catch(()=>{veil.remove();render('world');transitioning=false});return}
   if(target.closest('[data-back-today]')){render('today');return}
+  const returnWorld=target.closest('[data-return-world]');if(returnWorld){store.activate(returnWorld.dataset.returnWorld);render('world');return}
   const goal=target.closest('[data-goal]');if(goal){store.state.goal=goal.dataset.goal;store.save();renderOnboarding();return}
   if(target.closest('[data-owner-next]')){store.setOwnerName(document.querySelector('#ownerName')?.value);store.state.onboardingStep=1;store.save();renderOnboarding();return}
   if(target.closest('[data-next]')){store.state.onboardingStep=2;store.save();renderOnboarding();return}
@@ -38,7 +39,7 @@ document.addEventListener('click',event=>{
   const quickStack=target.closest('[data-quick-stack]');if(quickStack){store.activate(quickStack.dataset.quickStack);render('today');return}
   const insightStack=target.closest('[data-insight-stack]');if(insightStack){store.activate(insightStack.dataset.insightStack);render('insights');return}
   const openCheckin=target.closest('[data-open-checkin]');if(openCheckin){checkinModal(openCheckin.dataset.openCheckin);return}
-  const save=target.closest('[data-save-checkin]');if(save){const values=Object.fromEntries([...document.querySelectorAll('[data-metric]')].map(input=>[input.dataset.metric,+input.value]));store.saveCheckin(save.dataset.saveCheckin,values);save.closest('.modal-wrap').remove();render();toast('Состояние сохранено');return}
+  const save=target.closest('[data-save-checkin]');if(save){const values=Object.fromEntries([...document.querySelectorAll('[data-metric]')].map(input=>[input.dataset.metric,+input.value]));savedCheckinCode=save.dataset.saveCheckin;checkinWasUpdated=Boolean(store.checkin(savedCheckinCode));store.saveCheckin(savedCheckinCode,values);store.activate(savedCheckinCode);save.closest('.modal-wrap').remove();render('complete');return}
   if(target.closest('[data-reset]')){store.resetToday();render();toast('Отметки текущего стека сброшены');return}
   if(target.closest('[data-dismiss-today-hint]')){store.state.todayHintDismissed=true;store.save();render('today');return}
   const remove=target.closest('[data-remove]');if(remove){event.stopPropagation();modal(`<p class="eyebrow">Удаление</p><h2>Удалить ${remove.dataset.remove} STACK?</h2><p class="subtitle">Сохранённые отметки останутся в истории.</p><button class="danger" data-confirm-remove="${remove.dataset.remove}">Удалить стек</button>`);return}
@@ -107,4 +108,4 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncCalend
 window.setInterval(syncCalendarDay,30000);
 window.addEventListener('online',()=>{if(currentView==='profile')render('profile');toast('Соединение восстановлено')});
 window.addEventListener('offline',()=>{if(currentView==='profile')render('profile');toast('Офлайн-режим: данные сохраняются')});
-if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=45.1').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}
+if('serviceWorker'in navigator){let hadController=Boolean(navigator.serviceWorker.controller);navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController)updateBanner.classList.remove('hidden');hadController=true});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=46').then(registration=>{swRegistration=registration;registration.update().catch(()=>{})}).catch(()=>{}))}

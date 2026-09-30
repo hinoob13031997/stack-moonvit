@@ -545,3 +545,19 @@ h3{font-size:15px;margin:0}
 .world-landing-planet .planet-art{inset:0;width:100%;height:100%}
 .today-world .day-complete{position:relative;overflow:hidden;border-color:#9db8a4;background:radial-gradient(circle at 87% 50%,#d8ead28c,transparent 44%),linear-gradient(115deg,#e8f0e5,#f7f8ef)}
 .today-world .day-complete:after{content:'✦';margin-left:auto;color:#66896e;font-size:23px;line-height:1}
+/* A quiet close to the daily state check-in. */
+.checkin-complete{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:center;min-height:calc(100svh - 132px - env(safe-area-inset-top));margin:20px 0 0;padding:0 22px 26px;border-radius:26px;background:radial-gradient(ellipse at 50% 15%,var(--world-glow),transparent 48%),linear-gradient(160deg,#111c2d,#182520);color:#f3f6f0;text-align:center;box-shadow:0 18px 42px #17201921}
+.checkin-complete:before{content:'';position:absolute;z-index:-1;inset:0;background-image:radial-gradient(#ffffffb3 1px,transparent 1px);background-size:53px 73px;opacity:.15;pointer-events:none}
+.checkin-complete-sky{position:relative;flex:0 0 250px;width:100%;max-width:290px}
+.checkin-complete-planet{position:absolute;left:50%;top:40px;width:180px;height:180px;transform:translateX(-50%);filter:drop-shadow(0 0 25px var(--world-glow)) drop-shadow(0 20px 20px #02050b9c)}
+.checkin-complete-planet .planet-art{inset:0;width:100%;height:100%;filter:brightness(.95) saturate(.96) contrast(1.06)}
+.checkin-complete-halo{position:absolute;top:24px;left:50%;width:213px;height:213px;border:1px solid var(--world-light);border-radius:50%;transform:translateX(-50%);box-shadow:0 0 42px var(--world-glow);opacity:.22;animation:checkin-settle 1s ease-out both}
+.checkin-complete-mark{position:absolute;left:calc(50% + 52px);top:182px;width:38px;height:38px;display:grid;place-items:center;border:1px solid #c6dac4;border-radius:50%;background:#e2ecdf;color:#375744;font-size:18px;box-shadow:0 5px 20px #02050b66}
+.checkin-complete .eyebrow{max-width:100%;color:#bacdc4;font-size:9px;line-height:1.6;letter-spacing:.11em}
+.checkin-complete h1{max-width:100%;margin:4px 0 12px;font-size:28px;line-height:1.15;outline:none}
+.checkin-complete-copy{margin:0;color:#c5d0c9;font-size:12px;line-height:1.7}
+.checkin-complete-metrics{width:100%;display:grid;gap:0;margin:23px 0 0;padding:3px 14px;border:1px solid #ffffff1c;border-radius:15px;background:#ffffff08;text-align:left}
+.checkin-complete-metrics>div{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px}.checkin-complete-metrics>div+div{border-top:1px solid #ffffff12}.checkin-complete-metrics span{color:#c7d2ca;font-size:11px}.checkin-complete-metrics b{flex:0 0 auto;font-size:18px;font-weight:600}.checkin-complete-metrics small{color:#899e91;font-size:11px;font-weight:400}
+.checkin-complete-note{margin:19px 0 23px;color:#9eb2a5;font-size:11px;line-height:1.5}.checkin-complete-actions{width:100%;display:grid;gap:10px;margin-top:auto}.checkin-complete-actions .primary{width:100%;margin:0;background:#dce8d6;color:#243d2d}.checkin-complete-actions .secondary{width:100%;margin:0;border:1px solid #ffffff26;background:transparent;color:#c9d8cd}
+@keyframes checkin-settle{from{opacity:0;transform:translateX(-50%) scale(.86)}to{opacity:.22;transform:translateX(-50%) scale(1)}}
+@media(max-width:360px){.checkin-complete{padding-left:17px;padding-right:17px}.checkin-complete h1{font-size:25px}.checkin-complete-sky{flex-basis:224px}.checkin-complete-planet{top:29px;width:169px;height:169px}.checkin-complete-halo{top:14px;width:199px;height:199px}.checkin-complete-mark{top:162px}}
