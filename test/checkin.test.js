@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 
 const values=new Map();
 globalThis.localStorage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};
-const {store}=await import('../src/store.js?v=46');
-const {checkinCompleteView}=await import('../src/ui.js?v=46');
+const {store}=await import('../src/store.js?v=46.1');
+const {checkinCompleteView}=await import('../src/ui.js?v=46.1');
 
 test('итог состояния относится к сохранённому миру и не меняет действия или развитие',()=>{
   store.install('FOCUS');

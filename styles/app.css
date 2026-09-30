@@ -561,3 +561,4 @@ h3{font-size:15px;margin:0}
 .checkin-complete-note{margin:19px 0 23px;color:#9eb2a5;font-size:11px;line-height:1.5}.checkin-complete-actions{width:100%;display:grid;gap:10px;margin-top:auto}.checkin-complete-actions .primary{width:100%;margin:0;background:#dce8d6;color:#243d2d}.checkin-complete-actions .secondary{width:100%;margin:0;border:1px solid #ffffff26;background:transparent;color:#c9d8cd}
 @keyframes checkin-settle{from{opacity:0;transform:translateX(-50%) scale(.86)}to{opacity:.22;transform:translateX(-50%) scale(1)}}
 @media(max-width:360px){.checkin-complete{padding-left:17px;padding-right:17px}.checkin-complete h1{font-size:25px}.checkin-complete-sky{flex-basis:224px}.checkin-complete-planet{top:29px;width:169px;height:169px}.checkin-complete-halo{top:14px;width:199px;height:199px}.checkin-complete-mark{top:162px}}
+body:has(.checkin-complete) .update-banner{display:none}
